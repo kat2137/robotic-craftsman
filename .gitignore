@@ -16,6 +16,10 @@ mano_data/
 *.pkl
 *.npz
 
+# Generated pose output
+out_demo/
+video_out/
+
 # Logs
 chumpy-install.log
 *.log
