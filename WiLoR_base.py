@@ -1,4 +1,4 @@
-"""Base module for the Robotic Craftsman project."""
+#base module for hand position recognition
 
 
 def main() -> None:
