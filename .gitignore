@@ -3,3 +3,19 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+
+# Vendored upstream WiLoR clone (has its own git repo) — clone separately
+WiLoR/
+
+# Model weights & data (re-downloadable, too large for GitHub)
+pretrained_models/
+mano_v1_2/
+mano_data/
+*.ckpt
+*.pt
+*.pkl
+*.npz
+
+# Logs
+chumpy-install.log
+*.log
