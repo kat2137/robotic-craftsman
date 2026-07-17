@@ -58,7 +58,6 @@ def main():
 
     print(f"Found {total} frames")
     # start of inference
-    # Iterate over all frames
     for frame_idx in range(total):
         ret, img_cv2 = cap.read()
         if not ret:
@@ -71,10 +70,12 @@ def main():
         
         bboxes = []
         is_right = []
-        for det in detections: 
+        conf = []
+        for det in detections:
             Bbox = det.boxes.data.cpu().detach().squeeze().numpy()
             is_right.append(det.boxes.cls.cpu().detach().squeeze().item())
             bboxes.append(Bbox[:4].tolist())
+            conf.append(float(Bbox[4]))
         
         if len(bboxes) == 0:
             print(f"  No hands detected")
@@ -82,6 +83,9 @@ def main():
         
         print(f"  Found {len(bboxes)} hand(s)")
         
+        frame_name = f"frame{frame_idx:06d}"
+        frame_path = os.path.join(args.out_folder, f"{frame_name}.png")
+        cv2.imwrite(frame_path, img_cv2)
         boxes = np.stack(bboxes)
         right = np.stack(is_right)
         
@@ -109,46 +113,34 @@ def main():
             # Extract and save hand pose data
             batch_size = batch['img'].shape[0]
             for n in range(batch_size):
-                img_fn, _ = f"frame{frame_idx:06d}", None  # Use frame index as filename
+                frame_name, _ = f"frame{frame_idx:06d}", None  # Use frame index as filename
                 
-                # Get hand data
-                verts = out['pred_vertices'][n].detach().cpu().numpy()  # 778 hand vertices
+                
                 joints = out['pred_keypoints_3d'][n].detach().cpu().numpy()  # 21 hand joints
                 
                 is_right_hand = batch['right'][n].cpu().numpy()
                 # Mirror x-axis if right hand
-                verts[:,0]  = (2*is_right_hand-1)*verts[:,0]
                 joints[:,0] = (2*is_right_hand-1)*joints[:,0]
                 
                 cam_t = pred_cam_t_full[n]  # Camera translation [tx, ty, tz]
                 
                 # Save as JSON for easy loading in robot code
                 pose_data = {
-                    'image': str(args.video),
+                    'image': frame_path,
                     'hand_index': n,
                     'is_right_hand': bool(is_right_hand),
+                    'confidence': float(conf[n]) if len(conf) > n else None,
                     'camera_translation': cam_t.tolist(),  # [tx, ty, tz]
                     'focal_length': float(scaled_focal_length.cpu().numpy()),
-                    'hand_vertices': verts.tolist(),  # 778x3 - hand mesh vertices
                     'hand_joints': joints.tolist(),   # 21x3 - hand keypoints
                 }
                 #end of wilor copy
-                pose_file = os.path.join(args.out_folder, f'{img_fn}_hand{n}.json')
+                pose_file = os.path.join(args.out_folder, f'{frame_name}_hand{n}.json')
                 with open(pose_file, 'w') as f:
                     json.dump(pose_data, f, indent=2)
                 print(f"    Saved pose to {os.path.basename(pose_file)}")
                 
                 
-                # Optionally save mesh
-                if args.save_mesh:
-                    import trimesh
-                    mesh_file = os.path.join(args.out_folder, f'{img_fn}_hand{n}.obj')
-                    
-                    # Create mesh using MANO faces
-                    faces = model.mano.faces.cpu().numpy()
-                    mesh = trimesh.Trimesh(vertices=verts, faces=faces)
-                    mesh.export(mesh_file)
-                    print(f"    Saved mesh to {os.path.basename(mesh_file)}")
 
     print("\nDone!")
     cap.release()
