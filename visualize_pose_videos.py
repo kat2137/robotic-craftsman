@@ -91,7 +91,7 @@ def main():
         
         # Prepare dataset
         dataset = ViTDetDataset(model_cfg, img_cv2, boxes, right, rescale_factor=args.rescale_factor, fp16=args.fast)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=0)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=0) 
 
         # Process each batch
         print(f"  Estimating hand pose...")
@@ -114,10 +114,7 @@ def main():
             batch_size = batch['img'].shape[0]
             for n in range(batch_size):
                 frame_name, _ = f"frame{frame_idx:06d}", None  # Use frame index as filename
-                
-                
                 joints = out['pred_keypoints_3d'][n].detach().cpu().numpy()  # 21 hand joints
-                
                 is_right_hand = batch['right'][n].cpu().numpy()
                 # Mirror x-axis if right hand
                 joints[:,0] = (2*is_right_hand-1)*joints[:,0]
@@ -139,7 +136,6 @@ def main():
                 with open(pose_file, 'w') as f:
                     json.dump(pose_data, f, indent=2)
                 print(f"    Saved pose to {os.path.basename(pose_file)}")
-                
                 
 
     print("\nDone!")
