@@ -15,7 +15,7 @@ import cv2
 import matplotlib
 matplotlib.use("Agg")  # headless backend -> save to PNG
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+from mpl_toolkits.mplot3d import Axes3D 
 
 # OpenPose-ordered 21-joint hand skeleton (WiLoR output order)
 FINGERS = {
@@ -38,7 +38,6 @@ def load_hands(stem, out_folder):
 
 
 def project_2d(joints, cam_t, focal, W, H, is_right):
-    """Project 3D joints to image pixels (pinhole, principal point at centre)."""
     p = joints + np.asarray(cam_t)
     u = focal * p[:, 0] / p[:, 2] + W / 2.0
     v = focal * p[:, 1] / p[:, 2] + H / 2.0
@@ -101,11 +100,16 @@ def main():
     ax0.set_title(f"{stem}  ({n} hand{'s' if n > 1 else ''})", fontsize=10)
     ax0.axis("off")
 
+
     # Panels 2..: one 3D skeleton per hand
     for i, h in enumerate(hands):
         ax = fig.add_subplot(1, n + 1, i + 2, projection="3d")
         side = "R" if h["is_right_hand"] else "L"
-        draw_skeleton_3d(ax, np.array(h["hand_joints"]), f"hand {i} ({side})")
+        kp = np.array(h["hand_joints"])
+        if not h["is_right_hand"]:
+            kp[:, 0] *= -1    
+        draw_skeleton_3d(ax, kp, f"hand {i} ({side})")
+
 
     fig.tight_layout()
     out = args.save or os.path.join(args.out_folder, f"{stem}_viz.png")
