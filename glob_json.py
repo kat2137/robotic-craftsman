@@ -11,8 +11,9 @@ frames = [frame_num(p) for p in files]
 #by_num = dict(zip(frames, files))
 n = max(frames) + 1
 joints = np.full((n, 21, 3), np.nan)
-conf = np.full((n,), np.nan)
-hand = np.full((n,), np.nan)
+conf = np.full((n), np.nan)
+hand = np.full((n), np.nan)
+camera_translation = np.full((n,3), np.nan)
 
 
 for p in files:
