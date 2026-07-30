@@ -70,12 +70,12 @@ The angle in between vectors a and b is derived from dot product of a and b divi
 The tendon architecture of the robot is designed with singe tendon per finger but the script can be easily modified to include double tendon architecture.
 
 Specific notes for servos in my wiring setup - irrelevant if you're wiring them yourself:
-Channel 0 - finger 5 - pinkie | max straightening - 2000us | max flex - 500us |
-Channel 1 - finger 1 - thumb (adduction)| max backwards motion - 2500 us | max adduction to palm - 1000us |
+Channel 0 - finger 1 - thumb adduction | max backwards motion - 2200us | max adduction - 800us |
+Channel 1 - finger 1 - thumb  | max straightening - 2000 us| max flex - 800us |
 Channel 2 - finger 3 - middle | max straightening - 1500us | max flex - 2400us |
-Channel 3 - finger 2 - index | max straightening - 2000us | max flex - 500us |
-Channel 4 - finger 4 - ring  | max straightening - 1500us | max flex - 500us |
-Channel 5 - finger 1 - thumb | max straightening - 2400us | max flex - 500us |
+Channel 3 - finger 4 - ring   | max straightening - 1600us | max flex - 500us |
+Channel 4 - finger 5 - pinkie | max straightening - 1700us | max flex - 1000us |
+Channel 5 - finger 2 - index  | max straightening - 2400us | max flex - 1300us |
 
 
 STAGE 2 - Wrist setup
@@ -92,3 +92,5 @@ What needs to be added is a tendon displacement leeway for wrist tilt. It's a na
 
 To acknlowledge the difference that needs to be applied to the finger position if the wrist moves, an equation ...
 k = ?
+
+Grasping setting on no wrist tilt (3000) =  ch 0 = 1800us, ch 1 = 1000us and ch 5 = 1600/1550us
