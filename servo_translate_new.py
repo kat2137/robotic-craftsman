@@ -11,14 +11,14 @@ if not cap.isOpened():
 
 SERVOS = {
     "pinkie": {"ch": 0, "straight": 2000, "flexed": 500},
-    "thumb_add": {"ch": 1, "straight": 2500, "flexed": 1000},
+    "thumb_add": {"ch": 1, "straight": 2000, "flexed": 1000},
     "middle": {"ch": 2, "straight": 1500, "flexed": 2400},
     "index":  {"ch": 3, "straight": 2050, "flexed": 1200},
     "ring":   {"ch": 4, "straight": 1400, "flexed": 500},
     "thumb":  {"ch": 5, "straight": 2100, "flexed": 600},
 }
 CHANNELS = [0, 1, 2, 3, 4, 5] 
-ORDER = ["thumb", "index", "middle", "ring", "pinkie"]
+ORDER = ["thumb", "index", "middle", "ring", "pinkie", "thumb_add"]
 # wrist, elbow and shoulder operators are wired to a separate bus servo control board
 pwm = PCA9685(busnum=1)
 pwm.set_pwm_freq(60)
@@ -49,7 +49,7 @@ def main():
             for i, name in enumerate(ORDER):
                 move(name, row[i], lo[i], hi[i])
                 print(f"{name}: {row[i]:.1f} ({lo[i]:.1f}, {hi[i]:.1f})")
-            time.sleep(1/30)
+            time.sleep(4/30)
     finally:
         for i, name in enumerate(ORDER):
             move(name, lo[i], lo[i], hi[i])
@@ -57,8 +57,5 @@ def main():
         for name in ORDER:
             pwm.set_pwm(SERVOS[name]["ch"], 0, 0)
 if __name__ == "__main__": main()
-
-
-
 
 
