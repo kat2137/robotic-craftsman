@@ -1,0 +1,8 @@
+{
+  "wrist_tilt_ref": 2999,
+  "channels": {
+    "0": {"name": "thumb", "touch_us": 1800},
+    "1": {"name": "index", "touch_us": 1000},
+    "5": {"name": "?", "touch_us": 1575, "range": [1550, 1600]}
+  }
+}

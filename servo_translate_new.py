@@ -10,12 +10,12 @@ if not cap.isOpened():
     print("could not open video")
 
 SERVOS = {
-    "pinkie": {"ch": 0, "straight": 2000, "flexed": 500},
-    "thumb_add": {"ch": 1, "straight": 2000, "flexed": 1000},
+    "pinkie": {"ch": 4, "straight": 1700, "flexed": 1000},
+    "thumb_add": {"ch": 0, "straight": 2200, "flexed": 800},
     "middle": {"ch": 2, "straight": 1500, "flexed": 2400},
-    "index":  {"ch": 3, "straight": 2050, "flexed": 1200},
-    "ring":   {"ch": 4, "straight": 1400, "flexed": 500},
-    "thumb":  {"ch": 5, "straight": 2100, "flexed": 600},
+    "index":  {"ch": 5, "straight": 2400, "flexed": 1300},
+    "ring":   {"ch": 3, "straight": 1600, "flexed": 500},
+    "thumb":  {"ch": 1, "straight": 2000, "flexed": 800},
 }
 CHANNELS = [0, 1, 2, 3, 4, 5] 
 ORDER = ["thumb", "index", "middle", "ring", "pinkie", "thumb_add"]
