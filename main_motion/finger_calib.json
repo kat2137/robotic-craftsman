@@ -1,8 +1,8 @@
 {
   "wrist_tilt_ref": 2999,
   "channels": {
-    "0": {"name": "thumb", "position": 1800, "release": 1200},
-    "1": {"name": "index", "position": 1000, "release": 1200},
-    "5": {"name": "thumb_add", "position": 1575, "release": 1200, "range": [1550, 1600]}
+    "0": {"name": "thumb", "position": 1800, "release": 1200, "straight": 2200, "flexed": 800},
+    "1": {"name": "thumb_add", "position": 1000, "release": 1200, "straight": 2000, "flexed": 800},
+    "5": {"name": "index", "position": 1575, "release": 1200, "straight": 2400, "flexed": 1300}
   }
 }
