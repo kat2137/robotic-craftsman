@@ -1,15 +1,8 @@
 from servo_motors_setup.tuning_servos import move_us
 from st_motors_setup.tuning_st_servos import move_st, read
-from angle_computation import apply_angles
 from Adafruit_PCA9685 import PCA9685
-import numpy as np
 import json
 import time
-import keyboard
-
-
-#value added later
-x = 100
 
 pwm = PCA9685(busnum=1)
 pwm.set_pwm_freq(60)
@@ -35,6 +28,10 @@ def no_wrist():
     if keyboard.is_pressed("q"):
         exit()
 
+def finger_limits(ch):
+    cfg = CHANNELS[str(ch)]
+    return cfg["straight"], cfg["flexed"]
+
 def wrist_grasp():
     print ("press 'ch' to set wrist position, 'space' to grasp, 'r' to release, 'q' to quit")
     if keyboard.is_pressed("ch"):
@@ -42,12 +39,14 @@ def wrist_grasp():
     if keyboard.is_pressed("space"):
         move_st(2, wrist_position, 100, 100)
         for finger in CHANNELS:
+            s, f = finger_limits(finger)
             ad_pos = calib["channels"][finger]["position"] + 0.02 *(read(2) - 3000)
-            move_us(int(finger), ad_pos)
+            move_us(int(finger), ad_pos, s, f)
     if keyboard.is_pressed("r"):
         move_st(2, 3000, 100, 100)
         for finger in CHANNELS:
-            move_us(int(finger), calib["channels"][finger]["release"])
+            s, f = finger_limits(finger)
+            move_us(int(finger), calib["channels"][finger]["release"], s, f)
     if keyboard.is_pressed("q"):
         exit()
         
@@ -56,8 +55,10 @@ def main():
         print("press 'w' for wrist grasp, 'n' for no wrist, 'q' to quit")
         if keyboard.is_pressed("w"):
             wrist_grasp()
+            time.sleep(0.05)
         if keyboard.is_pressed("n"):
             no_wrist()
+            time.sleep(0.05)
         if keyboard.is_pressed("q"):
             exit()
 
