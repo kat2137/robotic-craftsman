@@ -2,8 +2,6 @@
 import numpy as np
 import sys
 
-path = sys.argv[1]
-data = np.load(path)
 
 def bone_vector(p1, p2) -> float:
     p1, p2 = np.array(p1), np.array(p2)
