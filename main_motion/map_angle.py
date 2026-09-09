@@ -9,6 +9,12 @@ import numpy as np
 import json
 from typing import Dict, Optional
 import sys, os
+from pathlib import Path
+from angle_computation import apply_angles
+
+HERE = Path(__file__).resolve().parent
+ROOT = next(p for p in HERE.parents if (p / ".git").exists())
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "WiLoR"))
 
@@ -197,11 +203,15 @@ def main():
     no_hand = np.isnan(data["joints"]).all(axis=(1,2)).sum()  # number of frames with no hand detected
     t = np.arange(len(valid))
 
+    curl = np.full((n,6), np.nan)
+    for i in range(n):
+        curl[i] = apply_angles(joints[i])
+
     tip = data["joints"][:, finger_path, 0] 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14,6), sharex=True)
-    ax1.plot(t, valid.astype(int), label="Hand detected", drawstyle="steps-post")
-    for val, label in enumerate("xyz"):
-        ax2.plot(t, tip[:, val], label=label)
+    ax1.plot(tip, valid.astype(int), label=label, drawstyle="steps-post")
+    for col, label in enumerate("xyz"):
+        ax2.plot(t, curl[:, col], label="Curl")
     ax2.legend()
     ax2.set_ylabel(f"Tip position{s_joint}")
     ax2.set_xlabel("frame")

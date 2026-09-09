@@ -55,4 +55,3 @@ def apply_angles(mcp_row: int) -> list:
     return angles
 
 # for thumb add, the function needs to compute the vector in between the thumb mcp and the index finger mcp.
-

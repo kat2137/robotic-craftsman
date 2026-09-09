@@ -88,9 +88,19 @@ acceleration
 speed
 
 
-What needs to be added is a tendon displacement leeway for wrist tilt. It's a natural occurence in human anatomy, called tendosis. Because finger tendons are attached to bones below the wrist, tilting the wrist stretched/relaxes the tendons. I recommend reading more on that on Wikipedia.
+What needs to be added is a tendon displacement leeway for wrist tilt. It's a natural occurence in human anatomy, called tenodesis. Because finger tendons are attached to bones below the wrist, tilting the wrist stretched/relaxes the tendons. I recommend reading more on that on Wikipedia.
 
-To acknlowledge the difference that needs to be applied to the finger position if the wrist moves, an equation ...
-k = ?
+To acknlowledge the difference that needs to be applied to the finger position if the wrist moves, an equation to compensate for the tension that adds up to finger tendons.
 
-Grasping setting on no wrist tilt (3000) =  ch 0 = 1800us, ch 1 = 1000us and ch 5 = 1600/1550us
+ad_pos -    position sent to the finger servo 
+position -  finger position you want, from your WiLoR angles
+ReadPos() -	current wrist tilt reading, from ReadPos
+P_W -       the wrist tilt position at which the fingers were calibrated
+P_W = 3000
+k -         coefficient of how much additional lenght is consumed for the finger tendon per angle of wrist bend
+k = 0.02 (for my use case)
+
+ad_pos = position + k *(ReadPos() - P_W)
+
+GRASPING TESTS:
+Firstly, I set two fingers to touch tips in a grasp-like manner manually, using tuning_servos.py. Grasping setting on no wrist tilt (3000) =  ch 0 = 1800us, ch 1 = 1000us and ch 5 = 1600/1550us
