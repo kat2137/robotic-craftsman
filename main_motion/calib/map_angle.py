@@ -79,9 +79,6 @@ def main():
     print(f"Found {total} frames")
     # start of inference
     for frame_idx in range(total):
-        if frame_idx not in wanted:
-            cap.grab()
-            continue
         ret, img_cv2 = cap.read()
         if not ret:
             print(f"  Error: Could not read frame {frame_idx}")
@@ -89,7 +86,7 @@ def main():
 
         # Detect hands
         print(f"  Detecting hands...")
-        detections = detector(img_cv2, conf=0.10, verbose=False)[0]
+        detections = detector(img_cv2, conf=0.3, verbose=False)[0]
         
         bboxes = []
         is_right = []
@@ -167,7 +164,7 @@ def main():
     def frame_num (p:Path):
         return int(p.stem.removeprefix("frame").split("_")[0])
 
-    files = sorted(Path(args.out_folder).glob("frame*.json"), key=frame_num)
+    files = sorted(Path("video_out").glob("frame*.json"), key=frame_num)
     # numbers the frames and puts them into a dict
     frames = [frame_num(p) for p in files]
     #by_num = dict(zip(frames, files))
@@ -193,7 +190,7 @@ def main():
     headers = data.files
     joint_shape = data["joints"].shape
 
-    with open(ROOT / "main_motion/calib/data/position_log.csv")) as csvfile:
+    with open("position_log.csv") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             if row['element'] != 'finger':
@@ -226,4 +223,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

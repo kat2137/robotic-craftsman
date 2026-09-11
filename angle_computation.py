@@ -2,8 +2,6 @@
 import numpy as np
 import sys
 
-path = sys.argv[1]
-data = np.load(path)
 
 def bone_vector(p1, p2) -> float:
     p1, p2 = np.array(p1), np.array(p2)
@@ -54,4 +52,8 @@ def apply_angles(mcp_row: int) -> list:
     angles[5] = finger_angle(wrist, frame[2], frame[5])   
     return angles
 
+if __name__ == "__main__":
+    path = sys.argv[1]
+    data = np.load(path)
 # for thumb add, the function needs to compute the vector in between the thumb mcp and the index finger mcp.
+

@@ -7,15 +7,12 @@ LINKS = [
     {"name": "wrist rotate", "parent": "elbow",       "driver": None,        "ratio": None, "axis": (0, 1, 0),                "offset": (0, 0.1743, 0)},
     {"name": "wrist tilt",   "parent": "wrist rotate","driver": None,        "ratio": None, "axis": (0, 0, 1),                "offset": (0, 0.15, 0)},
 
-    {"name": "index mcp",    "parent": "wrist tilt",  "driver": None,        "ratio": None, "axis": (0, 0, 1),                "offset": (0, 0.1, 0)},
-    {"name": "index ip",     "parent": "index mcp",   "driver": "index mcp", "ratio": 1.0,  "axis": (0, 0, 1),                "offset": (0, 0.041, 0)},
-    {"name": "index dip",    "parent": "index ip",    "driver": "index mcp", "ratio": 1.0,  "axis": (0, 0, 1),                "offset": (0, 0.027, 0)},
-    {"name": "index tip",    "parent": "index dip",   "driver": None,        "ratio": None, "axis": None,                     "offset": (0, 0.023, 0)},
+    {"name": "index mcp", "parent": "wrist tilt", "driver": "index", "ratio": 0.35, "axis": (0, 0, 1), "offset": (0, 0.1, 0)},
+    {"name": "index ip",  "parent": "index mcp",  "driver": "index", "ratio": 0.46, "axis": (0, 0, 1), "offset": (0, 0.041, 0)},
+    {"name": "index dip", "parent": "index ip",   "driver": "index", "ratio": 0.15, "axis": (0, 0, 1), "offset": (0, 0.027, 0)},
 
-    {"name": "thumb add",    "parent": "wrist tilt",  "driver": None,        "ratio": None, "axis": (0.522, 0.404, 0.747),    "offset": (0.005302, 0.027710, 0.019011)},
-    {"name": "thumb mcp",    "parent": "thumb add",   "driver": None,        "ratio": None, "axis": (-0.958, -0.270, -0.092), "offset": (0.010116, 0.039836, 0.022029)},
-    {"name": "thumb ip",     "parent": "thumb mcp",   "driver": "thumb mcp", "ratio": 1.0,  "axis": (-0.927, -0.231, -0.291), "offset": (0.007367, 0.032400, 0.008091)},
-    {"name": "thumb tip",    "parent": "thumb ip",    "driver": None,        "ratio": None, "axis": None,                     "offset": (0, 0, 0)},  # TODO: measure
+    {"name": "thumb mcp", "parent": "thumb add",  "driver": "thumb", "ratio": 0.44, "axis": (-0.958, -0.270, -0.092), "offset": (0.010116, 0.039836, 0.022029)},
+    {"name": "thumb ip",  "parent": "thumb mcp",  "driver": "thumb", "ratio": 0.56, "axis": (-0.927, -0.231, -0.291), "offset": (0.007367, 0.032400, 0.008091)}, 
 ]
 BY_NAME = {link["name"]: link for link in LINKS}
 CURRENT_ANGLE = [
@@ -81,6 +78,8 @@ def fkine_all(q:int):
             pose[joint] = transform(joint, angle)
         else:
             if b in pose:
-                x = pose[b] @ transform(joint, angle)
+                x = pose[b] @ transform(joint, np.radians(angle))
                 pose[joint] = x
     return pose
+
+  
