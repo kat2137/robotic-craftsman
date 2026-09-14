@@ -13,10 +13,11 @@ import argparse
 import numpy as np
 import cv2
 import matplotlib
-matplotlib.use("Agg")  
+matplotlib.use("Agg")  # headless backend -> save to PNG
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 
 
+# OpenPose-ordered 21-joint hand skeleton (WiLoR output order)
 FINGERS = {
     "thumb":  [0, 1, 2, 3, 4],
     "index":  [0, 5, 6, 7, 8],

@@ -14,11 +14,11 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = next(p for p in HERE.parents if (p / ".git").exists())
-sys.path.insert(0, "/Users/katarzynadlugosz/projects/robotic-craftsman")
+sys.path.insert(0, str(ROOT))
 
 import angle_computation     
 
-sys.path.insert(0, "/Users/katarzynadlugosz/projects/robotic-craftsman/WiLoR")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "WiLoR"))
 
 from wilor.models import WiLoR, load_wilor
 from wilor.utils import recursive_to

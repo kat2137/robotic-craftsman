@@ -88,19 +88,20 @@ acceleration
 speed
 
 
-What needs to be added is a tendon displacement leeway for wrist tilt. It's a natural occurence in human anatomy, called tenodesis. Because finger tendons are attached to bones below the wrist, tilting the wrist stretched/relaxes the tendons. I recommend reading more on that on Wikipedia.
+What needs to be added is a tendon displacement leeway for wrist tilt. It's a natural occurence in human anatomy, called tendosis. Because finger tendons are attached to bones below the wrist, tilting the wrist stretched/relaxes the tendons. I recommend reading more on that on Wikipedia.
 
-To acknlowledge the difference that needs to be applied to the finger position if the wrist moves, an equation to compensate for the tension that adds up to finger tendons.
+To acknlowledge the difference that needs to be applied to the finger position if the wrist moves, an equation ...
+k = ?
 
-ad_pos -    position sent to the finger servo 
-position -  finger position you want, from your WiLoR angles
-ReadPos() -	current wrist tilt reading, from ReadPos
-P_W -       the wrist tilt position at which the fingers were calibrated
-P_W = 3000
-k -         coefficient of how much additional lenght is consumed for the finger tendon per angle of wrist bend
-k = 0.02 (for my use case)
+Grasping setting on no wrist tilt (3000) =  ch 0 = 1800us, ch 1 = 1000us and ch 5 = 1600/1550us
 
-ad_pos = position + k *(ReadPos() - P_W)
+# I should write more about wrist and rotation servos and the camera, but it was difficult so i will add that later
 
-GRASPING TESTS:
-Firstly, I set two fingers to touch tips in a grasp-like manner manually, using tuning_servos.py. Grasping setting on no wrist tilt (3000) =  ch 0 = 1800us, ch 1 = 1000us and ch 5 = 1600/1550us
+To write forward and inverse kinematics, which calculates the automatic position of every joint based on the needed position of the end-effector. The end-effector in my case is the gripper, which are the index and thumb fingertips. All the equations are based on Theory of applied robotics : kinematics, dynamics, and control / Jazar, Reza N. and turned into python by looking everything up online.
+It took me a only few days to understand kinematics and matrix transformations, which means they are not too complicated even if you're not a Maths major. All of them are in #f_kinematics.py and #i_kinematics.py
+
+I conducted some manual grasping tests with silicon-cured fingertips, which were captured in grasping_tests.py and grasp_test2.py. Based on that, I produced a finger_calib.json doc describing positions of grasping for the robot.
+
+main_motion/calib is where calibration against the real design sits. Limits.py includes observed limits for each joint that later will be used as a range limit for kinematics operations. 
+Calibration was aimed at figuring what's the bending ratio in between the phalanges of the fingers, and for that, I wanted to plot the Wilor xyz points on the frames and compare the angle output with the real output about servo activity.
+I filmed a video, located in calib/data, meanwhile using position_log.py, I triggered and recorded all motion ranges of all links. I labelled each in vid_log.csv and matched it to position_log in timelapse_helper_script.py. It was mostly for me to also learn about data structures and pandas' df, it could have been matched just by eliminating the time delay from the log but I tried different methods to learn these operations.
