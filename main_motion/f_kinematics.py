@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from roboticstoolbox import ET
 LINKS = [
     {"name": "base",         "parent": None,          "driver": None,        "ratio": None, "axis": None,                     "offset": (0.128, 0, 0)},
     {"name": "elbow",        "parent": "base",        "driver": None,        "ratio": None, "axis": (0, 0, 1),                "offset": (0, 0, 0)},
@@ -32,7 +31,7 @@ CURRENT_ANGLE = [
 ]
 BY_ANGLE = {angle["name"]: angle for angle in CURRENT_ANGLE}
 # rodrigues' rotation formula
-def rodrig(joint:str, angle:int):
+def rodrig(joint:str, angle:float):
     K = np.zeros((3,3))
     joint = BY_NAME[joint]
     axis = joint["axis"]
@@ -45,7 +44,7 @@ def rodrig(joint:str, angle:int):
     R = np.eye(3) + np.sin(angle)*K + (1-np.cos(angle))*K@K
     return R
 
-def transform(joint:str, angle:int):
+def transform(joint:str, angle:float):
     output = np.eye(4)
     joint = BY_NAME[joint]
     axis =joint["axis"]
@@ -61,7 +60,7 @@ def find_parent(name):
         return [link]
     return find_parent(parent) + [link]
 
-def fkine(joint:int):
+def fkine(joint):
     M = np.eye(4)
     joints = find_parent(joint)
     for j in joints:
@@ -71,7 +70,7 @@ def fkine(joint:int):
         M = M @ M_joint
     return M
 
-def fkine_all(q:int):
+def fkine_all(q:dict):
     pose = {}
     for link in LINKS:
         driver = link["driver"]

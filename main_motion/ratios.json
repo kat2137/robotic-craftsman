@@ -1,0 +1,7 @@
+{
+  "w_spring": {
+    "0": {"name": "thumb_add", "degrees per 100us": 2.6},
+    "1": {"name": "thumb", "mcp":0.44,"pip":0.56},
+    "5": {"name": "index", "mcp":0.35, "pip":0.46, "dip":0.15}
+  }
+}
