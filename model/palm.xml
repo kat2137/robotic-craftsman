@@ -1,0 +1,439 @@
+<mujoco model="palm">
+    <!-- ================================================================
+         REWRITTEN FROM ACDC4Robot EXPORT
+         Fixes applied vs. the raw export:
+           - single kinematic tree, rooted at base1 (was: elbow_case2, with
+             base1 hanging off it as a leaf)
+           - removed duplicated subtrees (the hand appeared 2x, servo_base 3x)
+           - unique names for all meshes / bodies / geoms
+           - the 8 worldbody-level "islands" are now joined into the tree
+           - joint ranges, damping, actuators added (PLACEHOLDER values,
+             see the <default> block and the "TUNE" comments)
+         All positions, euler angles, joint axes and inertials are copied
+         verbatim from your export. Nothing geometric was invented.
+         ================================================================ -->
+
+    <compiler angle="radian" meshdir="." />
+    <option timestep="0.002" gravity="0 0 -9.81" />
+
+    <default>
+        <!-- TUNE: contacts are OFF by default so the model loads and moves
+             without self-intersecting meshes exploding the sim. Set
+             contype="1" conaffinity="1" once you want grasping. -->
+        <geom contype="0" conaffinity="0" rgba="0.7 0.7 0.75 1" />
+        <!-- TUNE: damping/stiffness are guesses. Fit against hardware. -->
+        <joint damping="0.5" armature="0.01" limited="true" />
+        <position kp="150" kv="8" ctrllimited="true" />
+    </default>
+
+    <asset>
+        <mesh name="base1" file="meshes/base1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="elbow_case2-v1" file="meshes/elbow_case2-v1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="elbow_main1" file="meshes/elbow_main1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="elbow_main2" file="meshes/elbow_main2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="case_midarm2" file="meshes/case_midarm2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="case_midarm" file="meshes/case_midarm.stl" scale="0.001 0.001 0.001" />
+        <mesh name="midarm1" file="meshes/midarm1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="bearing_cap_midarm" file="meshes/bearing_cap_midarm.stl" scale="0.001 0.001 0.001" />
+        <mesh name="bottom_rotation-wheel" file="meshes/bottom_rotation-wheel.stl" scale="0.001 0.001 0.001" />
+        <mesh name="top_rotation-wheel" file="meshes/top_rotation-wheel.stl" scale="0.001 0.001 0.001" />
+        <mesh name="inside_rotation_bearing_frame" file="meshes/inside_rotation_bearing_frame.stl" scale="0.001 0.001 0.001" />
+        <mesh name="inside_rotation-cog" file="meshes/inside_rotation-cog.stl" scale="0.001 0.001 0.001" />
+        <mesh name="inside_rotation_wheel" file="meshes/inside_rotation_wheel.stl" scale="0.001 0.001 0.001" />
+        <mesh name="midarm_frame1" file="meshes/midarm_frame1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="midarm_frame2" file="meshes/midarm_frame2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="midarm_frame3" file="meshes/midarm_frame3.stl" scale="0.001 0.001 0.001" />
+        <mesh name="midarm_frame4" file="meshes/midarm_frame4.stl" scale="0.001 0.001 0.001" />
+        <mesh name="servo_base" file="meshes/servo_base.stl" scale="0.001 0.001 0.001" />
+        <mesh name="finger_servo1" file="meshes/finger_servo1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="servo_wrist" file="meshes/servo_wrist.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wrist_servo_plat1" file="meshes/wrist_servo_plat1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wrist_servo_plat2" file="meshes/wrist_servo_plat2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wristframe_main" file="meshes/wristframe_main.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wristframe" file="meshes/wristframe.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wristframe2" file="meshes/wristframe2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="wrist" file="meshes/wrist.stl" scale="0.001 0.001 0.001" />
+        <mesh name="saddle_1-1" file="meshes/saddle_1-1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="saddle_2-1" file="meshes/saddle_2-1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="thumb_mcp" file="meshes/thumb_mcp.stl" scale="0.001 0.001 0.001" />
+        <mesh name="thumb_pip" file="meshes/thumb_pip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="thumb_tip" file="meshes/thumb_tip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="index_mcp" file="meshes/index_mcp.stl" scale="0.001 0.001 0.001" />
+        <mesh name="index_pip" file="meshes/index_pip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="index_mip" file="meshes/index_mip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="index_tip" file="meshes/index_tip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="mid_mcp" file="meshes/mid_mcp.stl" scale="0.001 0.001 0.001" />
+        <mesh name="middle_pip" file="meshes/middle_pip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="mid_mip" file="meshes/mid_mip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="mid_tip" file="meshes/mid_tip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="ring_mcp" file="meshes/ring_mcp.stl" scale="0.001 0.001 0.001" />
+        <mesh name="ring_pip" file="meshes/ring_pip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="ring_mip" file="meshes/ring_mip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="ring_tip" file="meshes/ring_tip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="small_mcp" file="meshes/small_mcp.stl" scale="0.001 0.001 0.001" />
+        <mesh name="small_pip" file="meshes/small_pip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="small_mip" file="meshes/small_mip.stl" scale="0.001 0.001 0.001" />
+        <mesh name="small_tip" file="meshes/small_tip.stl" scale="0.001 0.001 0.001" />
+    </asset>
+
+    <worldbody>
+        <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
+        <geom name="floor" pos="0 0 0" size="1 1 1" type="plane" rgba="1 0.83 0.61 0.5" contype="1" conaffinity="1" />
+
+        <!-- Your mesh geometry lives at roughly z = -0.03 .. -0.44 in the
+             exported global frame, i.e. below the floor plane. The +0.5 lift
+             on base1 raises the whole robot above it. Adjust to taste; it
+             affects nothing else because base1 is the welded root. -->
+        <body name="base1" pos="0 0 0.43" euler="0 0 0">
+            <geom name="base1_geom" type="mesh" mesh="base1" pos="0 0 0" euler="0 0 0" />
+            <!-- HARDWARE: printed shell 0.106 + 40T steel pulley 0.303 + 20T steel pulley
+                 0.073 + HTD5M-9 belt 0.015 + STS3215 elbow servo 0.060 = 0.557 kg.
+                 base1 is welded to the world, so this has NO dynamic effect -
+                 it is here for bookkeeping and for if you ever free the base. -->
+            <inertial mass="0.557" pos="0.03507294455526667 -0.0033303212525474858 -0.40908124270524016" fullinertia="5.60e-04 1.53e-03 1.22e-03 4.55e-05 4.54e-06 -7.62e-07" />
+
+            <!-- Rigid 54: base1 <-> elbow_case2 -->
+            <body name="elbow_case2-v1" pos="0 0 4.399708861372683" euler="0 0 0">
+                <geom name="elbow_case2-v1_geom" type="mesh" mesh="elbow_case2-v1" pos="0 0 0" euler="0 0 0" />
+                <!-- HARDWARE: printed 0.072 + STS3215 rotation servo 0.060 = 0.132 kg.
+                     Also welded (parent of the elbow hinge), so no dynamic effect. -->
+                <inertial mass="0.132" pos="0.04384490458014511 -0.05333605265141133 -4.8088695397835695" fullinertia="9.30e-05 3.61e-04 2.92e-04 -5.67e-06 1.79e-06 -6.92e-08" />
+
+                <!-- Revolute 3: elbow hinge -->
+                <body name="elbow_main1" pos="5.879116354193498e-05 -0.0003142633200703493 -4.399999970086164" euler="1.8991159259421016e-14 -9.273428489272168e-17 0.0015654847778752356">
+                    <joint name="elbow_pitch" type="hinge" axis="0.0015654841384419441 0.9999987746289554 -1.8991159259421016e-14" pos="-0.002206516384655231 0.013817346826342903 -0.4078658912865194" range="-1.57 1.57" />
+                    <geom name="elbow_main1_geom" type="mesh" mesh="elbow_main1" pos="0 0 0" euler="0 0 0" />
+                    <inertial mass="0.12482675968783168" pos="-0.0031999516665286946 0.012338962940966779 -0.3671555865065753" fullinertia="0.00017904554845469926 0.00023903218398388653 8.201842849256508e-05 -8.207704843175467e-07 4.334989205591768e-06 2.5905204598673402e-05" />
+
+                    <!-- Rigid 32 -->
+                    <body name="case_midarm2" pos="-0.0005856373134274425 -0.0037097083507749385 -0.0007999916076997952" euler="0.0 9.273428489272168e-17 0.0">
+                        <geom name="case_midarm2_geom" type="mesh" mesh="case_midarm2" pos="0 0 0" euler="0 0 0" />
+                        <inertial mass="0.013584836261824012" pos="-0.0042406704055164895 0.022487206023899985 -0.29127847036090293" fullinertia="2.925218775747141e-06 4.779773200650889e-06 1.992250720592794e-06 -1.0579573860103965e-18 1.337451232093883e-18 -6.235599878333697e-09" />
+                    </body>
+
+                    <!-- NEW LINK: elbow_main2 was rigid-GROUPED to elbow_main1 in
+                         Fusion, so the exporter never saw it and the whole
+                         forearm became an orphan island. Welded here. -->
+                    <body name="elbow_main2" pos="0 0 0" euler="0 0 0">
+                        <geom name="elbow_main2_geom" type="mesh" mesh="elbow_main2" pos="0 0 0" euler="0 0 0" />
+                        <inertial mass="0.12482675968783168" pos="-0.0071064458949155074 -0.05934883913683391 -0.3671555865065744" fullinertia="0.00017904554845480663 0.00023903218398391577 8.201842849263539e-05 -8.207704843271546e-07 -4.3349892056706e-06 -2.590520459903428e-05" />
+
+                        <!-- Rigid 28 -->
+                        <body name="midarm1" pos="0.0014800898424819071 0.0017835164029880919 0.0" euler="0.0 1.0029275792316747e-16 0.0">
+                            <geom name="midarm1_geom" type="mesh" mesh="midarm1" pos="0 0 0" euler="0 0 0" />
+                            <inertial mass="0.029727934696544413" pos="-0.0040213320354501435 -0.021633743159847008 -0.3191717320490354" fullinertia="1.5820078446935164e-05 1.5809691420619994e-05 3.1387163084745554e-05 -1.7013961397945483e-09 1.1869726489225961e-09 7.441834282023377e-09" />
+
+                            <body name="case_midarm" pos="-0.002234456212781661 0.0002921278928187236 0.0002000000000002991" euler="0.0 -1.0029275792316723e-16 0.0">
+                                <geom name="case_midarm_geom" type="mesh" mesh="case_midarm" pos="0 0 0" euler="0 0 0" />
+                                <inertial mass="0.12628377228044554" pos="-0.004215377562160435 -0.028823801318405468 -0.2929115041768235" fullinertia="0.00011130091884202384 0.00015640355463477273 0.00021898625546859946 2.7687318896421037e-08 -1.481260823626248e-08 1.491732961914134e-06" />
+                            </body>
+
+                            <!-- Rigid 30 -->
+                            <body name="bearing_cap_midarm" pos="0 0 0" euler="0 0 0">
+                                <geom name="bearing_cap_midarm_geom" type="mesh" mesh="bearing_cap_midarm" pos="0 0 0" euler="0 0 0" />
+                                <inertial mass="0.003082374386051848" pos="-0.004000000000017692 -0.021499999999998097 -0.31588390871514294" fullinertia="1.9264251954547695e-07 1.9264251945787302e-07 3.115764959885085e-07 2.6709661979359784e-21 1.4908115201206648e-19 1.5631880878149123e-21" />
+
+                                <!-- NEW LINK: forearm-fixed half of the rotation
+                                     assembly. Rigid 34 ties the bearing frame to
+                                     this, and Revolute 5 spins top_rotation-wheel
+                                     against it (forearm pronation). -->
+                                <body name="bottom_rotation-wheel" pos="0 0 0" euler="0 0 0">
+                                    <geom name="bottom_rotation-wheel_geom" type="mesh" mesh="bottom_rotation-wheel" pos="0 0 0" euler="0 0 0" />
+                                    <!-- HARDWARE: printed 0.041 + 61816-2RS (80/100/10) 0.155
+                                         + 6010-2RS (50/80/16) 0.390 = 0.586 kg.
+                                         Ring inertias added about the roll axis:
+                                         Izz += 7.52e-4, Ixx/Iyy += 3.76e-4.
+                                         THIS ONE MATTERS - it sits past the elbow. -->
+                                    <inertial mass="0.586" pos="-0.004240670405602034 -0.02300890549373332 -0.2588942356149073" fullinertia="4.21e-04 4.21e-04 8.40e-04 0 0 0" />
+
+                                    <!-- Rigid 34 -->
+                                    <body name="inside_rotation_bearing_frame" pos="0 0 0" euler="0 0 0">
+                                        <geom name="inside_rotation_bearing_frame_geom" type="mesh" mesh="inside_rotation_bearing_frame" pos="0 0 0" euler="0 0 0" />
+                                        <inertial mass="0.019774581053232397" pos="-0.004249357056317103 -0.023984346311741643 -0.2597928786021008" fullinertia="1.3904302768571629e-05 1.461362683569025e-05 2.7324346202124834e-05 6.2594735133020655e-09 -1.2324888447809149e-09 -1.3678173916100963e-07" />
+                                    </body>
+
+                                    <!-- ASSUMPTION: you weren't sure where the cog
+                                         sits. Parked on the forearm-fixed side with
+                                         inside_rotation_wheel (Rigid 33) under it.
+                                         If the cog actually turns with the top
+                                         wheel, move both bodies into
+                                         top_rotation-wheel below. -->
+                                    <body name="inside_rotation-cog" pos="0 0 0" euler="0 0 0">
+                                        <geom name="inside_rotation-cog_geom" type="mesh" mesh="inside_rotation-cog" pos="0 0 0" euler="0 0 0" />
+                                        <inertial mass="0.02806037897807346" pos="-0.004297657377514098 -0.022345962035489896 -0.2598835694570504" fullinertia="4.423584712511409e-06 4.422214192886104e-06 5.229709127693169e-06 3.860396889595496e-10 -3.4763095004740558e-09 -9.88886756183617e-09" />
+
+                                        <body name="inside_rotation_wheel" pos="0.002229891622472083 0.0010517508828688715 -0.002000000000003439" euler="0.0 0.0 -0.08726646259971638">
+                                            <geom name="inside_rotation_wheel_geom" type="mesh" mesh="inside_rotation_wheel" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.04648970405850455" pos="-0.004205524587639639 -0.023576406227836477 -0.24879430710835898" fullinertia="2.1700667053340904e-05 2.167852117777303e-05 3.3111923610036964e-05 -2.099044757774599e-09 6.543436638870734e-09 -1.0569914448806138e-07" />
+                                        </body>
+                                    </body>
+
+                                    <!-- Revolute 5: forearm rotation.
+                                         NOTE the export had top as parent and bottom
+                                         as child; inverted here so the chain runs
+                                         base -> forearm -> wrist. Axis and pos are
+                                         unchanged, so the physical hinge is
+                                         identical - only the sign convention of the
+                                         joint angle flips. -->
+                                    <body name="top_rotation-wheel" pos="0 0 0.0020000000000005257" euler="0 0 0">
+                                        <joint name="forearm_roll" type="hinge" axis="0.0 4.0939474033052545e-15 1.0" pos="-0.004240473500689968 -0.02300890514721359 -0.2393000149569177" range="-3.14 3.14" />
+                                        <geom name="top_rotation-wheel_geom" type="mesh" mesh="top_rotation-wheel" pos="0 0 0" euler="0 0 0" />
+                                        <inertial mass="0.022411307932975036" pos="-0.00424071790696933 -0.023008905494745716 -0.23417960972865293" fullinertia="2.3268450014598185e-05 2.376079359130991e-05 4.679615087053676e-05 -7.00500059027569e-16 1.2562717962530823e-12 -6.697658920529204e-17" />
+
+                                        <!-- Rigid 35 / 36 plus the two frames the
+                                             exporter left floating. All four midarm
+                                             frames ride the top wheel, per your
+                                             answer to Q5. -->
+                                        <body name="midarm_frame1" pos="0 0 0" euler="0 0 0">
+                                            <geom name="midarm_frame1_geom" type="mesh" mesh="midarm_frame1" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.013077326423712444" pos="0.020835609944592326 -0.02474901478052595 -0.2194016782383206" fullinertia="1.1560547491242423e-05 2.6772936934744626e-06 1.3244194631114897e-05 -6.126380151237948e-07 -1.4786353317516475e-08 3.0143183449181515e-08" />
+                                        </body>
+                                        <body name="midarm_frame2" pos="-7.780599008983147e-05 -8.90549378996644e-06 0.0010000000000000143" euler="0 0 0">
+                                            <geom name="midarm_frame2_geom" type="mesh" mesh="midarm_frame2" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.012836510737604839" pos="-0.028700342847971464 -0.021466761270772034 -0.2191814680072605" fullinertia="1.172011083257977e-05 2.709589329331257e-06 1.3472572328040831e-05 -5.866310505461611e-07 1.4976603728608217e-08 2.8325411859588694e-09" />
+                                        </body>
+                                        <body name="midarm_frame3" pos="0 0 0" euler="0 0 0">
+                                            <geom name="midarm_frame3_geom" type="mesh" mesh="midarm_frame3" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.003025213732166698" pos="0.015998924244424603 -0.02442620173825529 -0.13202139395423845" fullinertia="1.75793596555339e-06 3.541712297557402e-07 2.097606685938835e-06 -9.857766497657634e-08 -3.437342441588745e-09 2.4473019007743575e-10" />
+                                        </body>
+                                        <body name="midarm_frame4" pos="0 0 0" euler="0 0 0">
+                                            <geom name="midarm_frame4_geom" type="mesh" mesh="midarm_frame4" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.0030694647215382194" pos="-0.024489548006821762 -0.02161250362971867 -0.13201971592620804" fullinertia="1.806245483020314e-06 3.773455286288751e-07 2.168894263171567e-06 -9.942967315904845e-08 3.6400504487865047e-09 -3.6367348285692264e-10" />
+                                        </body>
+
+                                        <!-- NEW LINK: servo_base onto the midarm
+                                             structure, per your answer to Q2/Q4. -->
+                                        <body name="servo_base" pos="0 0 0" euler="0 0 0">
+                                            <geom name="servo_base_geom" type="mesh" mesh="servo_base" pos="0 0 0" euler="0 0 0" />
+                                            <inertial mass="0.023347936296700286" pos="-0.0038914566166743034 -0.02241088109570979 -0.181257503300401" fullinertia="2.424398791605222e-05 2.4246744330059852e-05 2.5570147435155526e-06 -4.2755498445289e-08 -6.126642254392419e-08 6.309809646552328e-08" />
+
+                                            <!-- The six finger servos (Rigid 38-43).
+                                                 One mesh, six uniquely-named bodies.
+                                                 These carry no joints - they are dead
+                                                 mass. You can delete all six and add
+                                                 0.0386 kg to servo_base's inertial if
+                                                 you want a lighter model. -->
+                                            <body name="finger_servo_a" pos="-1.6419447051174637e-05 -0.0011237598307833109 0.0001125561737196977" euler="0.0032159605642823386 0.0 1.787309509816767e-07">
+                                                <geom name="finger_servo_a_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.011306280382565531 -0.02846435878880882 -0.21678562518528555" fullinertia="6.352904559631381e-07 3.60900116462562e-07 4.2430683233863283e-07 -9.193938643865093e-09 1.186052886856706e-09 3.406400141891381e-08" />
+                                            </body>
+                                            <body name="finger_servo_b" pos="-0.02564148509803546 -0.020136098036332584 0.029987615894584846" euler="0.0 0.0 1.570796325163613">
+                                                <geom name="finger_servo_b_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.011306280382565556 -0.028464358788808954 -0.21678562518528532" fullinertia="6.352904559646076e-07 3.609001164641801e-07 4.2430683233859805e-07 -9.193938643868903e-09 1.1860528868295754e-09 3.406400141893336e-08" />
+                                            </body>
+                                            <body name="finger_servo_c" pos="-0.025470505317295694 -0.003099375363758216 0.0579999999999976" euler="0.0 0.0 1.570796328426179">
+                                                <geom name="finger_servo_c_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.01130628038256555 -0.028464358788808958 -0.21678562518528532" fullinertia="6.352904559645453e-07 3.609001164642425e-07 4.2430683233859635e-07 -9.193938643867702e-09 1.1860528868179684e-09 3.406400141893218e-08" />
+                                            </body>
+                                            <body name="finger_servo_d" pos="0.01743691588395006 -0.04237825893728809 0.05799999999999707" euler="0.0 0.0 -1.5707963251636143">
+                                                <geom name="finger_servo_d_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.011306280382565558 -0.028464358788808812 -0.2167856251852851" fullinertia="6.352904559637567e-07 3.6090011646285814e-07 4.2430683233861636e-07 -9.193938643872333e-09 1.1860528868958839e-09 3.406400141893717e-08" />
+                                            </body>
+                                            <body name="finger_servo_e" pos="-0.008676549695107541 -0.042022616700673705 -7.923914088987516e-05" euler="0.0 0.0 3.1415926519585105">
+                                                <geom name="finger_servo_e_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.011306280382565561 -0.02846435878880897 -0.21678562518528555" fullinertia="6.35290455964011e-07 3.6090011646374684e-07 4.2430683233859434e-07 -9.193938643866284e-09 1.1860528868568937e-09 3.4064001418955615e-08" />
+                                            </body>
+                                            <body name="finger_servo_f" pos="0.01686256587887774 -0.025727558717797718 0.03005921085910973" euler="0.0 0.0 -1.570796328426176">
+                                                <geom name="finger_servo_f_geom" type="mesh" mesh="finger_servo1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.009" pos="-0.01130628038256555 -0.028464358788808836 -0.21678562518528532" fullinertia="6.352904559634943e-07 3.6090011646282336e-07 4.2430683233861615e-07 -9.193938643869707e-09 1.1860528868925388e-09 3.406400141893458e-08" />
+                                            </body>
+
+                                            <!-- Rigid 44/45/46 -->
+                                            <body name="wristframe_main" pos="0.00015979850277995312 0.00028013238073132434 -0.00019999999999999575" euler="0 0 0">
+                                                <geom name="wristframe_main_geom" type="mesh" mesh="wristframe_main" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.008694045258178242" pos="-0.0040573226062072245 -0.02217912981402472 -0.11569114975983423" fullinertia="2.2754811637514622e-06 3.3550914462177967e-06 2.4999927570124104e-06 1.2248954919014427e-07 -3.726647648626771e-09 4.077450016054208e-09" />
+                                                <body name="wristframe2" pos="0.0 0.0 -0.0002999999999999936" euler="0 0 0">
+                                                    <geom name="wristframe2_geom" type="mesh" mesh="wristframe2" pos="0 0 0" euler="0 0 0" />
+                                                    <inertial mass="0.00028090855255269345" pos="-0.003970121212762107 -0.04072113733785346 -0.12437086991837439" fullinertia="7.779484720778308e-10 2.552582825970718e-08 2.531294522484558e-08 9.688739632833523e-12 4.2835830917410276e-11 -8.280630236312971e-11" />
+                                                </body>
+                                                <body name="wristframe" pos="0.0 0.0 -0.0003999999999999915" euler="0 0 0">
+                                                    <geom name="wristframe_geom" type="mesh" mesh="wristframe" pos="0 0 0" euler="0 0 0" />
+                                                    <inertial mass="0.000280711283068681" pos="-0.003981874831433221 -0.0037933949744008546 -0.12437149983606167" fullinertia="7.862965343392002e-10 2.5448095382091776e-08 2.5244059252010344e-08 -1.2324386504337753e-11 4.579534439546678e-11 8.64654796068446e-11" />
+                                                </body>
+                                            </body>
+
+                                            <!-- NEW LINK: the two wrist servo platforms
+                                                 were floating in the export with no
+                                                 joint at all. Welded to servo_base. -->
+                                            <body name="wrist_servo_plat1" pos="0 0 0" euler="0 0 0">
+                                                <geom name="wrist_servo_plat1_geom" type="mesh" mesh="wrist_servo_plat1" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.0043891308773027155" pos="-0.003999999999999604 -0.03864999999999999 -0.10250000000002361" fullinertia="1.2198050966128474e-07 2.4073500843131343e-07 1.219805099648461e-07 2.329340604949326e-21 1.9481757786848908e-20 1.6940658945086007e-20" />
+                                            </body>
+                                            <body name="wrist_servo_plat2" pos="0 0 0" euler="0 0 0">
+                                                <geom name="wrist_servo_plat2_geom" type="mesh" mesh="wrist_servo_plat2" pos="0 0 0" euler="0 0 0" />
+                                                <inertial mass="0.006667097769373416" pos="-0.003999999999999988 -0.004779864882288504 -0.10249999999984795" fullinertia="1.5784372489996933e-07 2.9671632439530644e-07 1.5784372158614917e-07 1.0587911840678754e-22 -1.6940658945086007e-21 3.218301683092714e-18" />
+                                            </body>
+
+                                            <!-- Rigid 47: wrist tilt servo stands on
+                                                 servo_base, per your answer to Q4. -->
+                                            <body name="servo_wrist" pos="0 0 0" euler="0 0 0">
+                                                <geom name="servo_wrist_geom" type="mesh" mesh="servo_wrist" pos="0 0 0" euler="0 0 0" />
+                                                <!-- HARDWARE: modelled shell was 0.033; a real STS3215 is 0.060 kg. -->
+                                                <inertial mass="0.060" pos="-0.00399999999825011 -0.022021370434721726 -0.11581973043045174" fullinertia="1.50e-05 1.30e-05 7.96e-06 0 0 -3.67e-09" />
+
+                                                <!-- ====== Revolute 7: WRIST TILT ====== -->
+                                                <body name="wrist" pos="0.0 0.0 0.0" euler="0 0 0">
+                                                    <joint name="wrist_tilt" type="hinge" axis="0.0 -1.0 0.0" pos="-0.003999835972550843 -0.04030039564116414 -0.10249972381669999" range="-1.4 1.4" />
+                                                    <geom name="wrist_geom" type="mesh" mesh="wrist" pos="0 0 0" euler="0 0 0" />
+                                                    <inertial mass="0.011483437179705376" pos="-0.003881261433371234 -0.022861357731667087 -0.08278445454974236" fullinertia="3.5616397568421495e-06 1.6392654089561947e-06 2.473879444789054e-06 1.2305964638388166e-07 9.705613133191707e-09 8.232022960327823e-08" />
+
+                                                    <!-- ============ SMALL FINGER (Rigid 48) ============ -->
+                                                    <body name="small_mcp" pos="0.0 0.0 0.0" euler="0 0 0">
+                                                        <geom name="small_mcp_geom" type="mesh" mesh="small_mcp" pos="0 0 0" euler="0 0 0" />
+                                                        <inertial mass="0.0024577428669934017" pos="-0.0012295407710126312 -0.05226194963065594 -0.03904594718707084" fullinertia="6.500923231545896e-07 5.930038460974078e-07 7.625409322585354e-08 1.6959765414390602e-10 -2.443078928167238e-09 1.7038830566083342e-07" />
+                                                        <body name="small_pip" pos="-0.000789515744247341 0.00015098060130656955 -0.0002969187878314017" euler="0 0 0">
+                                                            <joint name="small_mcp_joint" type="hinge" axis="0.08693900000000004 0.962199 0.2580980000000001" pos="-0.0010264842557526593 -0.058609980601306566 -0.014823081212168606" range="-0.1 1.6" />
+                                                            <geom name="small_pip_geom" type="mesh" mesh="small_pip" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.00152795471808027" pos="0.0013752469895932083 -0.06462797123189488 0.0038868543135330636" fullinertia="1.8396760723129963e-07 1.7543427761324826e-07 3.838511781348671e-08 1.0096031994066817e-08 -3.707778727841684e-08 4.4153830191515445e-08" />
+                                                            <body name="small_mip" pos="0.00013249079006423804 -0.00041490152936175307 -0.0011650989284978982" euler="0 0 0">
+                                                                <joint name="small_pip_joint" type="hinge" axis="0.17486499999999996 0.9546360000000003 0.24102499999999996" pos="0.005471024954183102 -0.06821807907194483 0.020814017716329295" range="-0.1 1.6" />
+                                                                <geom name="small_mip_geom" type="mesh" mesh="small_mip" pos="0 0 0" euler="0 0 0" />
+                                                                <inertial mass="0.0006606102796946247" pos="0.009393706988579581 -0.07187018715519239 0.030310234813526748" fullinertia="2.7294682340885563e-08 2.945658960252257e-08 1.2397279735209406e-08 3.261776076090904e-09 -1.0513648339064246e-08 6.159657908416496e-09" />
+                                                                <body name="small_tip" pos="-0.0005459779151107314 -4.279200114645221e-05 9.246457085431814e-05" euler="0 0 0">
+                                                                    <joint name="small_mip_joint" type="hinge" axis="-0.03811 0.9734980000000002 0.22549700000000017" pos="0.015502002869293837 -0.07435828707079838 0.04059355314547497" range="-0.1 1.6" />
+                                                                    <geom name="small_tip_geom" type="mesh" mesh="small_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <inertial mass="0.0001971292481623935" pos="0.019359258548178188 -0.0761176765351247 0.04678146889886098" fullinertia="3.574667336993926e-09 4.541729028158009e-09 2.0497991113783282e-09 4.220942074545941e-10 -1.9645037647037292e-09 5.310086627171715e-10" />
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+
+                                                    <!-- ============ RING FINGER (Rigid 49) ============ -->
+                                                    <body name="ring_mcp" pos="-0.00031156541099924443 -0.0011046694111574759 0.000396416233211003" euler="0.01843427540346903 -0.006532963368591079 -0.0008570995681038396">
+                                                        <geom name="ring_mcp_geom" type="mesh" mesh="ring_mcp" pos="0 0 0" euler="0 0 0" />
+                                                        <inertial mass="0.002668594756977188" pos="-0.00038794885006286563 -0.03814331609803275 -0.033097304788295694" fullinertia="8.799646500942756e-07 8.681580430320249e-07 4.998370402275883e-08 1.088301578636865e-08 -8.756773571178059e-08 1.0966128150339695e-07" />
+                                                        <body name="ring_pip" pos="0.0015338537538980854 -5.981078142348828e-05 -0.0006742154314599544" euler="-0.00046225206013837406 0.0009489642061309624 -0.009057549024255495">
+                                                            <joint name="ring_mcp_joint" type="hinge" axis="0.08683013435823332 0.9908000254990857 0.10380763683536424" pos="0.0006618738495637663 -0.04090999595075586 -0.004735903198501776" range="-0.1 1.6" />
+                                                            <geom name="ring_pip_geom" type="mesh" mesh="ring_pip" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.0015560114957082764" pos="0.002823715064633402 -0.04376429668402902 0.015351657241259978" fullinertia="1.9938926217805602e-07 1.9814564716396226e-07 2.3610867410635296e-08 2.392512732014134e-09 -3.225791451696813e-08 1.6778763655705693e-08" />
+                                                            <body name="ring_mip" pos="-0.0007901502999586441 7.199174624024016e-05 -3.985962312277255e-06" euler="0 0 0">
+                                                                <joint name="ring_pip_joint" type="hinge" axis="0.09063156708598416 0.9957242611781378 0.01784510397253184" pos="0.007263705837497509 -0.04436547335536138 0.03193816138054232" range="-0.1 1.6" />
+                                                                <geom name="ring_mip_geom" type="mesh" mesh="ring_mip" pos="0 0 0" euler="0 0 0" />
+                                                                <inertial mass="0.0007999906854067875" pos="0.013013012795754864 -0.04536189445750905 0.04397430954211423" fullinertia="4.485772903736961e-08 5.723340152703879e-08 1.985866372481365e-08 5.828685199477733e-10 -2.3208905733951556e-08 7.523135813329202e-10" />
+                                                                <body name="ring_tip" pos="-0.0005397145964585442 -2.3735131764460043e-05 0.00012890901405169673" euler="0 0 0">
+                                                                    <joint name="ring_mip_joint" type="hinge" axis="-0.033757504640993356 0.9985253576684019 0.04251819847551381" pos="0.02148489311312602 -0.04529576364098356 0.05618883051772424" range="-0.1 1.6" />
+                                                                    <geom name="ring_tip_geom" type="mesh" mesh="ring_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <inertial mass="0.00029331964192942075" pos="0.02664638597974688 -0.04574669714236132 0.06467250834431607" fullinertia="6.8515003597532604e-09 9.28553495075995e-09 3.583018125102493e-09 -3.144408630894058e-11 -3.88215674221878e-09 -1.1588475326477215e-10" />
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+
+                                                    <!-- ============ MIDDLE FINGER (Rigid 50) ============ -->
+                                                    <body name="mid_mcp" pos="-0.0005240182568011341 -0.0011467264900412945 0.00023597091259659953" euler="0.01948252804266701 -0.007967872827755622 -8.95664837698179e-05">
+                                                        <geom name="mid_mcp_geom" type="mesh" mesh="mid_mcp" pos="0 0 0" euler="0 0 0" />
+                                                        <inertial mass="0.0026541538296917895" pos="-0.0010376075207271622 -0.02290524447540081 -0.03031923198523574" fullinertia="7.825889760753615e-07 7.931876649025819e-07 4.4874065632059313e-08 1.814929111549356e-09 -1.125300293415258e-07 1.3022820972357886e-08" />
+                                                        <body name="middle_pip" pos="-0.0007963257251491182 7.379420816162164e-05 -0.0003077511547665169" euler="0 0 0">
+                                                            <joint name="mid_mcp_joint" type="hinge" axis="0.08584389077654386 0.9961682003902238 0.016740644092967074" pos="0.0022368327400079423 -0.02280562373318712 -0.00355240991699242" range="-0.1 1.6" />
+                                                            <geom name="middle_pip_geom" type="mesh" mesh="middle_pip" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.0020292895269779085" pos="0.003360474078227266 -0.023394611083197344 0.0206584163018469" fullinertia="3.674594432583019e-07 3.660150345192189e-07 2.768216292928215e-08 -1.1519397897287846e-09 -4.168502220809524e-08 -3.8252817910685405e-09" />
+                                                            <body name="mid_mip" pos="0.00020593726901296629 -1.4775875343962103e-05 -2.0792085947255423e-05" euler="0 0 0">
+                                                                <joint name="middle_pip_joint" type="hinge" axis="0.08937895450370159 0.9946429474503823 -0.05193400855933568" pos="0.00730553149044213 -0.022359950448443657 0.04146294442135288" range="-0.1 1.6" />
+                                                                <geom name="mid_mip_geom" type="mesh" mesh="mid_mip" pos="0 0 0" euler="0 0 0" />
+                                                                <inertial mass="0.0010550296682912698" pos="0.015193144007027306 -0.023005099460496878 0.056064054836282" fullinertia="8.032551580454653e-08 1.0775632916354405e-07 3.739060681141915e-08 1.0913310647535964e-10 -4.674385256506918e-08 9.904696377708296e-11" />
+                                                                <body name="mid_tip" pos="-0.0005217307046265966 2.7229624762292878e-05 0.00018848966921075858" euler="0 0 0">
+                                                                    <joint name="mid_mip_joint" type="hinge" axis="0.0399269226836975 0.9986328594451941 -0.033748849496326144" pos="0.025886376160294624 -0.022578957964246374 0.07083390647289452" range="-0.1 1.6" />
+                                                                    <geom name="mid_tip_geom" type="mesh" mesh="mid_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <inertial mass="0.0002423237860749246" pos="0.031556971627425705 -0.02304046934559008 0.07729651107367415" fullinertia="3.718433516683201e-09 6.374071920929954e-09 3.639241239890688e-09 -6.56752845041331e-11 -2.9317343390183468e-09 -4.895491835961122e-11" />
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+
+                                                    <!-- ============ INDEX FINGER (Rigid 51) ============ -->
+                                                    <body name="index_mcp" pos="-0.0003526266266092973 0.0003982775442219139 -0.0002941852922304315" euler="-0.00594268141189588 -0.0052883739470886435 0.0004200889433589895">
+                                                        <geom name="index_mcp_geom" type="mesh" mesh="index_mcp" pos="0 0 0" euler="0 0 0" />
+                                                        <inertial mass="0.002523375437248965" pos="0.0007630455438845261 -0.006235017668486397 -0.029622945310892365" fullinertia="7.203919251045835e-07 7.176102024294442e-07 3.7889198260418135e-08 -6.350465712908806e-09 -7.204797574267683e-08 -5.568731692885728e-08" />
+                                                        <body name="index_pip" pos="-0.0018818761480394808 -0.0008815298043677631 -0.00028810464600790084" euler="0 0 0">
+                                                            <joint name="index_mcp_joint" type="hinge" axis="0.0829114977452631 0.9889924352920814 -0.12255769909179605" pos="0.003997787519080691 -0.0022930342707544993 -0.0036026135443139188" range="-0.1 1.6" />
+                                                            <geom name="index_pip_geom" type="mesh" mesh="index_pip" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.0021444203613001857" pos="0.00616249713405128 0.001113157538089684 0.019767080551606347" fullinertia="3.6778656000740344e-07 3.644932303677848e-07 5.064241210672507e-08 -1.289619079192424e-08 -6.642796013679761e-08 -6.123343780222579e-08" />
+                                                            <body name="index_mip" pos="-0.0007905232980045404 6.774307021503057e-05 -4.470760212160751e-06" euler="0 0 0">
+                                                                <!-- NOTE: this axis is sign-flipped relative to the
+                                                                     other index joints in your export. Physically fine
+                                                                     (it just reverses the angle convention), but if the
+                                                                     index finger bends the wrong way, negate it. -->
+                                                                <joint name="index_pip_joint" type="hinge" axis="-0.08446158877691883 -0.9707984145951304 0.22453428016643545" pos="0.012657508965446986 0.005544495701699416 0.040038639036086024" range="-1.6 0.1" />
+                                                                <geom name="index_mip_geom" type="mesh" mesh="index_mip" pos="0 0 0" euler="0 0 0" />
+                                                                <inertial mass="0.0009714570127921473" pos="0.01819648811754023 0.007770043746342353 0.052982889174823654" fullinertia="5.978342976135752e-08 6.979635583189134e-08 2.4211093733600867e-08 -5.600830653989934e-09 -2.6294449246389445e-08 -1.0575520825231265e-08" />
+                                                                <body name="index_tip" pos="-0.0005223320767289047 0.00010832322490450245 0.00015462217363761973" euler="0 0 0">
+                                                                    <joint name="index_mip_joint" type="hinge" axis="0.13623559085602027 0.9666259862093993 -0.21696551011581627" pos="0.02714214619949691 0.010446881348426989 0.06597982917587512" range="-0.1 1.6" />
+                                                                    <geom name="index_tip_geom" type="mesh" mesh="index_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <!-- TUNE: index fingertip mass/length changes when
+                                                                         you add the soft tip. -->
+                                                                    <inertial mass="0.00022374756261357617" pos="0.031581250153481295 0.010651476627436785 0.07194223856503318" fullinertia="3.0123603941717283e-09 4.307530852387817e-09 2.4495403212269777e-09 -2.50132877986767e-10 -1.9127097604265335e-09 -1.4430492850129868e-10" />
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+
+                                                    <!-- ============ THUMB (Rigid 53 -> saddle) ============ -->
+                                                    <body name="saddle_2-1" pos="-0.03960019073649625 0.0229600158415783 -0.01811433259381779" euler="-0.3980927427866039 -0.5706305012311939 0.12210328989722553">
+                                                        <geom name="saddle_2-1_geom" type="mesh" mesh="saddle_2-1" pos="0 0 0" euler="0 0 0" />
+                                                        <inertial mass="0.0003283443058449118" pos="-0.0017265047715689479 -0.0061243580874248485 -0.07244958103825341" fullinertia="3.3936276071904313e-09 3.180738293003167e-09 3.4753285999458993e-09 -2.9030020960274333e-10 1.5666654563752676e-10 2.24311188665142e-10" />
+
+                                                        <body name="saddle_1-1" pos="-0.0017960141048693323 0.0003713580911486147 7.187524922972255e-05" euler="0.0007100086627156696 -0.016562144226071357 0.08568431893378362">
+                                                            <geom name="saddle_1-1_geom" type="mesh" mesh="saddle_1-1" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.00013195097259749224" pos="0.0036971860451918415 0.00010559639146807617 -0.07635541364692247" fullinertia="1.0400942294384975e-09 1.1333127048646865e-09 9.433034532040586e-10 2.398528456893289e-10 -1.412756983807064e-10 -1.7137161712883162e-10" />
+                                                        </body>
+
+                                                        <body name="thumb_mcp" pos="0.0021453491196629136 -0.0020145354547877583 0.00030912641512052195" euler="0.036453494672958456 0.033734051039132545 0.05732562037171141">
+                                                            <joint name="thumb_mcp_joint" type="hinge" axis="0.5790969359845877 0.7024620204026814 -0.4137570549574289" pos="0.0015855996722578154 -0.0025505869944444093 -0.07507465596332252" range="-0.8 0.8" />
+                                                            <geom name="thumb_mcp_geom" type="mesh" mesh="thumb_mcp" pos="0 0 0" euler="0 0 0" />
+                                                            <inertial mass="0.0031964878294729855" pos="0.006487333144093596 0.010654646439088266 -0.05238180539651145" fullinertia="6.359653778281489e-07 5.189994243964036e-07 2.339197508499623e-07 -6.785844122453571e-08 -1.1484263924318462e-07 -2.609606985324891e-07" />
+                                                            <body name="thumb_pip" pos="-6.929649061166998e-06 0.003026666397561999 0.0010078647908988404" euler="-0.08354652393734315 -0.00900454254044747 0.023178826383541">
+                                                                <joint name="thumb_pip_joint" type="hinge" axis="0.9585196345363903 0.09202462407596668 -0.26976398059952744" pos="0.01295026894752142 0.02201864601106759 -0.03165993797287191" range="-0.1 1.6" />
+                                                                <geom name="thumb_pip_geom" type="mesh" mesh="thumb_pip" pos="0 0 0" euler="0 0 0" />
+                                                                <inertial mass="0.0011426311195010183" pos="0.015008214362312792 0.026625529322924703 -0.01809805044800632" fullinertia="1.0254209747600245e-07 1.03806195308209e-07 1.853417495990764e-08 -4.2045143305080416e-09 -1.7987383422350828e-08 -1.87475532922439e-08" />
+                                                                <body name="thumb_tip" pos="-0.007589309059437079 0.012753310408069502 -0.014409994019793218" euler="0.9236831871808644 0.14809454188013826 -0.31293658977939115">
+                                                                    <joint name="thumb_tip_joint" type="hinge" axis="0.9282701597554996 0.29164697109448723 -0.23077495620173039" pos="0.019798385498564303 0.02828395279858669 -0.00030953313631723947" range="-0.1 1.6" />
+                                                                    <geom name="thumb_tip_geom" type="mesh" mesh="thumb_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <!-- TUNE: thumb fingertip mass/length changes when
+                                                                         you add the soft tip. -->
+                                                                    <inertial mass="0.0003721523600156387" pos="0.02162607049174598 0.02784281296254021 0.010352768596363577" fullinertia="1.2865109962965175e-08 1.3725466630540284e-08 2.0819735411911066e-09 1.1929345267125193e-10 -2.5803675084034894e-09 1.083964558977824e-09" />
+                                                                </body>
+                                                            </body>
+                                                        </body>
+                                                    </body>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <!-- TUNE: position servos on every DOF. kp comes from the <default>
+         block. ctrlrange mirrors each joint's range. Swap to <motor> if you
+         want torque control instead. -->
+    <actuator>
+        <position name="a_elbow_pitch"     joint="elbow_pitch"       ctrlrange="-1.57 1.57" />
+        <position name="a_forearm_roll"    joint="forearm_roll"      ctrlrange="-3.14 3.14" />
+        <position name="a_wrist_tilt"      joint="wrist_tilt"        ctrlrange="-1.4 1.4" />
+
+        <position name="a_index_mcp"       joint="index_mcp_joint"   ctrlrange="-0.1 1.6" />
+        <position name="a_index_pip"       joint="index_pip_joint"   ctrlrange="-1.6 0.1" />
+        <position name="a_index_mip"       joint="index_mip_joint"   ctrlrange="-0.1 1.6" />
+
+        <position name="a_mid_mcp"         joint="mid_mcp_joint"     ctrlrange="-0.1 1.6" />
+        <position name="a_mid_pip"         joint="middle_pip_joint"  ctrlrange="-0.1 1.6" />
+        <position name="a_mid_mip"         joint="mid_mip_joint"     ctrlrange="-0.1 1.6" />
+
+        <position name="a_ring_mcp"        joint="ring_mcp_joint"    ctrlrange="-0.1 1.6" />
+        <position name="a_ring_pip"        joint="ring_pip_joint"    ctrlrange="-0.1 1.6" />
+        <position name="a_ring_mip"        joint="ring_mip_joint"    ctrlrange="-0.1 1.6" />
+
+        <position name="a_small_mcp"       joint="small_mcp_joint"   ctrlrange="-0.1 1.6" />
+        <position name="a_small_pip"       joint="small_pip_joint"   ctrlrange="-0.1 1.6" />
+        <position name="a_small_mip"       joint="small_mip_joint"   ctrlrange="-0.1 1.6" />
+
+        <position name="a_thumb_mcp"       joint="thumb_mcp_joint"   ctrlrange="-0.8 0.8" />
+        <position name="a_thumb_pip"       joint="thumb_pip_joint"   ctrlrange="-0.1 1.6" />
+        <position name="a_thumb_tip"       joint="thumb_tip_joint"   ctrlrange="-0.1 1.6" />
+    </actuator>
+</mujoco>
