@@ -1,14 +1,5 @@
 """
-Drive palm.xml from servo-space poses.
-
-Run:  python drive_hand.py            (interactive viewer)
-      python drive_hand.py --grasp my_grasp.json
-
-Your hardware has 6 finger servos; the sim has 15 finger joints. One servo
-curls a whole finger through MCP/PIP/MIP via tendon, so each servo value is
-expanded into 3 joint angles using COUPLING below. Set those ratios from your
-actual tendon routing - they are the main thing standing between this script
-and motion that matches your hardware.
+base driver script for testing initial model, pre-calibration and measuring ratios. Currently innacurate.
 """
 
 import argparse
@@ -18,20 +9,8 @@ import time
 import mujoco
 import mujoco.viewer
 import numpy as np
-
-# ----------------------------------------------------------------------------
-# SERVO SPACE -> JOINT SPACE
-# ----------------------------------------------------------------------------
-
-# STS3215: 0..4095 counts over 360 deg.  SG90/Tower Pro: 0..180 deg.
-# Set this to whatever units your grasp JSON actually uses.
 SERVO_UNITS = "sts3215"          # "sts3215" | "degrees"
 
-# Per-finger: which sim joints one servo drives, and the ratio of each joint's
-# travel to the servo's travel. A tendon that wraps each pulley equally gives
-# roughly (1.0, 1.0, 1.0); most real hands under-drive the distal joints.
-# MEASURE THESE on the real hand: hold the servo at a known angle and read the
-# three joint angles off the finger.
 COUPLING = {
     "index":  {"a_index_mcp": 1.0, "a_index_pip": -1.0, "a_index_mip": 0.8},
     "middle": {"a_mid_mcp":   1.0, "a_mid_pip":    1.0, "a_mid_mip":   0.8},
@@ -39,17 +18,11 @@ COUPLING = {
     "small":  {"a_small_mcp": 1.0, "a_small_pip":  1.0, "a_small_mip": 0.8},
     "thumb":  {"a_thumb_pip": 1.0, "a_thumb_tip":  0.8},
 }
-# index_pip has a sign-flipped axis in the CAD export, hence the -1.0 above.
-
-# Servo count at which the finger is fully open, and fully closed.
-# Read these off your hardware; they set the mapping from counts to radians.
 SERVO_OPEN   = 2048
 SERVO_CLOSED = 3100
 
 # Joint angle (rad) the finger reaches at SERVO_CLOSED, for a ratio-1.0 joint.
 FULL_CURL = 1.5
-
-# Actuators driven directly, not through the tendon coupling.
 DIRECT = ["a_elbow_pitch", "a_forearm_roll", "a_wrist_tilt", "a_thumb_mcp"]
 
 
@@ -131,10 +104,6 @@ def play(hand, sequence, viewer):
                     settle=step.get("hold", 0.0))
 
 
-# ----------------------------------------------------------------------------
-# A demo sequence: open hand -> pinch -> lift wrist -> release
-# ----------------------------------------------------------------------------
-
 DEMO = [
     {"pose": {"index": SERVO_OPEN, "middle": SERVO_OPEN, "ring": SERVO_OPEN,
               "small": SERVO_OPEN, "thumb": SERVO_OPEN,
@@ -165,7 +134,6 @@ def main():
     if args.grasp:
         with open(args.grasp) as f:
             raw = json.load(f)
-        # accept either a single pose dict or a list of steps
         sequence = raw if isinstance(raw, list) else [{"pose": raw, "time": 2.0, "hold": 2.0}]
     else:
         sequence = DEMO

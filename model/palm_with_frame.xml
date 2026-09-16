@@ -5,7 +5,7 @@
          ================================================================ -->
 
     <compiler angle="radian" meshdir="." />
-    <option timestep="0.002" gravity="0 0 -9.81" />
+    <option timestep="0.001" gravity="0 0 0" integrator="implicitfast" />
 
     <default>
         <!-- TUNE: contacts are OFF by default so the model loads and moves
@@ -73,7 +73,7 @@
         <mesh name="fr_outer_frame-1" file="meshes/outer_frame-1.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_inside_frame" file="meshes/inside_frame.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_top_clipper" file="meshes/top_clipper.stl" scale="0.001 0.001 0.001" />
-        <mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001" />
+        <!--mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001"-->
     </asset>
 
     <worldbody>
@@ -179,8 +179,8 @@
                                     </body>
 
                                     <!-- Revolute 5: forearm rotation.-->
-                                    <body name="top_rotation-wheel" pos="0 0 0.0020000000000005257" euler="0 0 0">
-                                        <joint name="forearm_roll" type="hinge" armature="1e-4" axis="0.0 4.0939474033052545e-15 1.0" pos="-0.004240473500689968 -0.02300890514721359 -0.2393000149569177" range="-3.14 3.14" />
+                                    <body name="top_rotation-wheel" pos="0 0 0.0020000000000005257" euler ="0 0 0">
+                                        <joint name="forearm_roll" type="hinge" axis="0.0 4.0939474033052545e-15 1.0" pos="-0.004240473500689968 -0.02300890514721359 -0.2393000149569177" range="-3.14 3.14" />
                                         <geom name="top_rotation-wheel_geom" type="mesh" mesh="top_rotation-wheel" pos="0 0 0" euler="0 0 0" />
                                         <inertial mass="0.022411307932975036" pos="-0.00424071790696933 -0.023008905494745716 -0.23417960972865293" fullinertia="2.3268450014598185e-05 2.376079359130991e-05 4.679615087053676e-05 -7.00500059027569e-16 1.2562717962530823e-12 -6.697658920529204e-17" />
 
@@ -265,7 +265,7 @@
 
                                                 <!-- ====== Revolute 7: WRIST TILT ====== -->
                                                 <body name="wrist" pos="0.0 0.0 0.0" euler="0 0 0">
-                                                    <joint name="wrist_tilt" type="hinge" armature="1e-4" axis="0.0 -1.0 0.0" pos="-0.003999835972550843 -0.04030039564116414 -0.10249972381669999" range="-1.4 1.4" />
+                                                    <joint name="wrist_tilt" type="hinge" axis="0.0 -1.0 0.0" pos="-0.003999835972550843 -0.04030039564116414 -0.10249972381669999" range="-1.4 1.4" />
                                                     <geom name="wrist_geom" type="mesh" mesh="wrist" pos="0 0 0" euler="0 0 0" />
                                                     <inertial mass="0.011483437179705376" pos="-0.003881261433371234 -0.022861357731667087 -0.08278445454974236" fullinertia="3.5616397568421495e-06 1.6392654089561947e-06 2.473879444789054e-06 1.2305964638388166e-07 9.705613133191707e-09 8.232022960327823e-08" />
 
@@ -409,30 +409,23 @@
         </body>
 
         <!-- ===================== NEEDLE =====================
-             Free body welded to thumb_tip. The weld is what holds it - the
-             fingers are NOT gripping it frictionally, so this works with
-             contacts off.
-
-             TO MOVE IT IN THE HAND: edit relpose in <equality> below. The
-             first three numbers are the needle's position relative to
-             thumb_tip's frame (metres), the last four are a quaternion
-             (w x y z); 1 0 0 0 means no rotation.
+             Free body welded to thumb_tip. 
 
              TO RELEASE IT mid-sequence, from Python:
                  i = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_EQUALITY, "needle_grip")
                  d.eq_active[i] = 0     # let go
                  d.eq_active[i] = 1     # grip again
              ================================================== -->
-        <body name="needle" pos="-0.0379 0.0288 0.3946" euler="0 0 0">
+        <!--body name="needle" pos="-0.0379 0.0288 0.3946" euler="0 0 0">
             <freejoint name="needle_free" />
             <geom name="needle_geom" type="mesh" mesh="craft_needle" pos="0 0 0" euler="0 0 0"
                   contype="1" conaffinity="1" rgba="0.85 0.85 0.88 1" mass="0.0005" />
-        </body>
+        </body-->
     </worldbody>
 
     <equality>
-        <weld name="needle_grip" body1="thumb_tip" body2="needle"
-              relpose="0 0 0 1 0 0 0" solref="0.005 1" />
+        <!--weld name="needle_grip" body1="thumb_tip" body2="needle"
+              relpose="0 0 0 1 0 0 0" solref="0.005 1" /-->
 
         <!-- Tendon coupling. polycoef: follower = c0 + c1*leader + ...
              Ratios from calibration (fractions of total curl), re-expressed
@@ -448,8 +441,8 @@
          Swap to <motor> if you want torque control instead. -->
     <actuator>
         <position name="a_elbow_pitch"     joint="elbow_pitch"       ctrlrange="-1.57 1.57" />
-        <position name="a_forearm_roll"    joint="forearm_roll"      ctrlrange="-3.14 3.14" />
-        <position name="a_wrist_tilt"      joint="wrist_tilt"        ctrlrange="-1.4 1.4" />
+        <position name="a_forearm_roll"    joint="forearm_roll"      kp="600"   ctrlrange="-3.14 3.14" />
+        <position name="a_wrist_tilt"      joint="wrist_tilt"        kp="600"   ctrlrange="-1.4 1.4" />
 
         <position name="a_index_mcp"       joint="index_mcp_joint"   ctrlrange="-0.07 1.2" />
 
