@@ -52,6 +52,18 @@ def apply_angles(mcp_row: int) -> list:
     angles[5] = finger_angle(wrist, frame[2], frame[5])   
     return angles
 
+def apply_angles_arr(frame):
+    angles = np.full (6, np.nan)
+    wrist = frame[0]
+
+    for f in range (5):
+        mcp, pip, tip = finger_index (f)
+        total_curl_val = (finger_angle(wrist, frame[mcp], frame[pip])
+                          + finger_angle(frame[mcp], frame[pip], frame[tip]))
+        angles[f] = total_curl_val
+    angles[5] = finger_angle(wrist, frame[2], frame[5])   
+    return angles
+
 if __name__ == "__main__":
     path = sys.argv[1]
     data = np.load(path)
