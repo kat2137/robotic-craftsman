@@ -20,8 +20,8 @@ from ultralytics import YOLO
 
 def main():
     parser = argparse.ArgumentParser(description='WiLoR demo for robot arm - no rendering, video input')
-    parser.add_argument('--video', type=str, default='/Users/katarzynadlugosz/Downloads/WhatsApp Video 2026-05-22 at 15.31.27 (1).mp4', help='Path to input video')
-    parser.add_argument('--out_folder', type=str, default='out_demo', help='Output folder to save pose data')
+    parser.add_argument('--video', type=str, default='/Users/katarzynadlugosz/Downloads/So.mp4', help='Path to input video')
+    parser.add_argument('--out_folder', type=str, default='out_so', help='Output folder to save pose data')
     parser.add_argument('--save_mesh', dest='save_mesh', action='store_true', default=False, help='If set, save meshes to disk')
     parser.add_argument('--rescale_factor', type=float, default=2.0, help='Factor for padding the bbox')
     parser.add_argument('--file_type', nargs='+', default=['*.jpg', '*.png', '*.jpeg'], help='List of file extensions to consider')

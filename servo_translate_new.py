@@ -18,7 +18,7 @@ SERVOS = {
     "thumb":  {"ch": 1, "straight": 2000, "flexed": 800},
 }
 CHANNELS = [0, 1, 2, 3, 4, 5] 
-ORDER = ["thumb", "index", "middle", "ring", "pinkie", "thumb_add"]
+ORDER = ["thumb_add", "thumb", "middle", "ring", "pinkie", "index"]
 # wrist, elbow and shoulder operators are wired to a separate bus servo control board
 pwm = PCA9685(busnum=1)
 pwm.set_pwm_freq(60)

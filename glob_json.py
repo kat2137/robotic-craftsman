@@ -5,7 +5,7 @@ import json
 def frame_num (p:Path):
     return int(p.stem.removeprefix("frame").split("_")[0])
 
-files = sorted(Path("video_out").glob("frame*.json"), key=frame_num)
+files = sorted(Path("out_demo").glob("frame*.json"), key=frame_num)
 # numbers the frames and puts them into a dict
 frames = [frame_num(p) for p in files]
 #by_num = dict(zip(frames, files))
@@ -22,6 +22,7 @@ for p in files:
         continue
     i = frame_num(p)
     joints[i] = data["hand_joints"]
-    conf[i] = data["confidence"]
+    if "confidence" in data:
+        conf[i] = data["confidence"]
 
-np.savez("handsewing_01.npz", joints=joints, confidence=conf, hand=hand)
+np.savez("so.npz", joints=joints, confidence=conf, hand=hand)
