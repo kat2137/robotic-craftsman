@@ -2,70 +2,20 @@
 import numpy as np
 import sys
 
+from arm import HandPose
 
-def bone_vector(p1, p2) -> float:
-    p1, p2 = np.array(p1), np.array(p2)
-    x1, y1, z1 = p1
-    x2, y2, z2 = p2
-
-    vect = [(x1 - x2), (y1 - y2), (z1 - z2)]
-    return vect
+bone_vector = HandPose.bone_vector
+finger_angle = HandPose.finger_angle
+finger_index = HandPose.finger_index
+apply_angles_arr = HandPose.apply_angles_arr
 
 
-def finger_angle(mcp: float, pip: float, tip: float) -> float:
-    """
-    Compute the angle of a finger given its keypoints.
-    kp: 3D coordinates of the finger keypoints (mcp, pip, tip)
-    mcp: index of the metacarpophalangeal joint
-    pip: index of the proximal interphalangeal joint
-    tip: index of the fingertip
-    Returns the angle in degrees.
-    """
-    m = bone_vector(mcp, pip)
-    t = bone_vector(pip, tip)
-    dot_product = np.dot(m,t)
-    m_len = np.linalg.norm(m)
-    t_len = np.linalg.norm(t)
-
-    cos_theta = dot_product/(m_len * t_len)
-    cos_theta = np.clip(cos_theta, -1.0, 1.0)
-
-    angle_radians = np.arccos(cos_theta)
-    angle_degrees = np.degrees(angle_radians)
-    return angle_degrees
-
-def finger_index (finger:int) -> tuple:
-    mcp = 1 + (4 * finger)
-    return mcp, mcp + 1, mcp + 3
-    
 def apply_angles(mcp_row: int) -> list:
-    angles = np.full (6, np.nan)
-    frame = data["joints"][mcp_row]
-    wrist = frame[0]
-
+    """Angles for one row of the module-level `data` (set by the caller, e.g. map_angle.py)."""
     #TOD - add thumb adduction
-    for f in range (5):
-        mcp, pip, tip = finger_index (f)
-        total_curl_val = (finger_angle(wrist, frame[mcp], frame[pip])
-                          + finger_angle(frame[mcp], frame[pip], frame[tip]))
-        angles[f] = total_curl_val
-    angles[5] = finger_angle(wrist, frame[2], frame[5])   
-    return angles
-
-def apply_angles_arr(frame):
-    angles = np.full (6, np.nan)
-    wrist = frame[0]
-
-    for f in range (5):
-        mcp, pip, tip = finger_index (f)
-        total_curl_val = (finger_angle(wrist, frame[mcp], frame[pip])
-                          + finger_angle(frame[mcp], frame[pip], frame[tip]))
-        angles[f] = total_curl_val
-    angles[5] = finger_angle(wrist, frame[2], frame[5])   
-    return angles
+    return HandPose.apply_angles_arr(data["joints"][mcp_row])
 
 if __name__ == "__main__":
     path = sys.argv[1]
     data = np.load(path)
 # for thumb add, the function needs to compute the vector in between the thumb mcp and the index finger mcp.
-

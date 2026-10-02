@@ -3,21 +3,14 @@ import numpy as np
 import json
 from pathlib import Path
 
+from arm import FINGER_ORDER, NPZ_PATH, SCALES_PATH, Calibration
 from main_motion.f_kinematics import LINKS
 
-HERE = Path(__file__).resolve().parent      
-ROOT = HERE.parent  
-OUT = ROOT / "main_motion" / "scale_retarget.json"
- 
+OUT = SCALES_PATH
 
-ORDER = ["thumb_add", "thumb", "middle", "ring", "pinkie", "index"]
-FINGERS =  {
-        "pinkie": {"ch": 4,},
-        "thumb_add": {"ch": 0},
-        "middle": {"ch": 2},
-        "index":  {"ch": 5},
-        "ring":   {"ch": 3},
-        "thumb":  {"ch": 1}}
+
+ORDER = FINGER_ORDER
+FINGERS = {s.name: {"ch": ch} for ch, s in Calibration.load().fingers().items()}
 
 def calculate_distances(data):
     joints = data["joints"]
@@ -65,7 +58,7 @@ def ratios(id_robot, th_robot, fingers):
      
                      
 if __name__ == "__main__":
-    data = np.load("handsewing_01.npz")
+    data = np.load(NPZ_PATH)
     fingers = calculate_distances(data) 
     index_r, thumb_r = f_lenghts()
     scale1 = sum(index_r)/sum(fingers[1])

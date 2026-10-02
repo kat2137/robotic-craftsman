@@ -31,11 +31,10 @@ def get_joint_pos(mcp):
 
     return wrist_tilt_a, elbow_tilt, mcp, C
 
-w, e, m, C = get_joint_pos([200, 300, 0])
-print(np.linalg.norm(np.array(C) - m))
+def main():
+    w, e, m, C = get_joint_pos([200, 300, 0])
+    print(np.linalg.norm(np.array(C) - m))
 
 
-
-
-
-
+if __name__ == "__main__":
+    main()

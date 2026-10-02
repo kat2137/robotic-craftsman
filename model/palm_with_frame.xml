@@ -1,6 +1,14 @@
 <mujoco model="palm">
     <!-- ================================================================
          Palm and frame with calibrated finger offsets
+         THUMB RE-EXPORTED 29 Sep from the neutral CAD pose.
+         The previous export was taken mid motion-study: adduction +70deg,
+         flexion +5deg, IP +50deg. q_new = q_old - 1.2217 / -0.0873 / +0.8727.
+         Adduction range re-derived: the old [-0.05,0.8] was measured against the
+         posed zero; shifted to neutral it is [-1.272,-0.422], which excludes
+         rest. New range [-1.27, 0.1] keeps the old LOWER bound (the real
+         mechanical stop) and opens the upper bound to neutral. Pinch closes
+         at adduction -0.864.
          + tendon coupling (equality constraints) for index and thumb
          ================================================================ -->
 
@@ -73,7 +81,7 @@
         <mesh name="fr_outer_frame-1" file="meshes/outer_frame-1.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_inside_frame" file="meshes/inside_frame.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_top_clipper" file="meshes/top_clipper.stl" scale="0.001 0.001 0.001" />
-        <!--mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001"-->
+        <mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001"/>
     </asset>
 
     <worldbody>
@@ -336,24 +344,37 @@
                                                          index_mcp_joint = MCP (leader, actuated)
                                                          index_pip_joint = PIP (follower, 1.314 x MCP)
                                                          index_mip_joint = DIP (follower, 0.429 x MCP)
-                                                         MCP range capped at 1.2 so PIP (1.314 x 1.2 = 1.58)
-                                                         stays inside its 1.6 limit. -->
+                                                         MCP capped at 1.2 so PIP (1.314 x 1.2 = 1.58) stays
+                                                         inside its limit. 29 Sep: with the measured pad sites,
+                                                         the fingertips meet at index 1.145, so the MCP needs
+                                                         at least that. The w_spring index figure (0.35) gives
+                                                         only 0.55 rad - treat those numbers as FRACTIONS of
+                                                         total curl, not rates; the absolute scale has to come
+                                                         from the commanded-us vs measured-angle curve. -->
                                                     <body name="index_mcp" pos="-0.0003526266266092973 0.0003982775442219139 -0.0002941852922304315" euler="-0.00594268141189588 -0.0052883739470886435 0.0004200889433589895">
                                                         <geom name="index_mcp_geom" type="mesh" mesh="index_mcp" pos="0 0 0" euler="0 0 0" />
                                                         <inertial mass="0.002523375437248965" pos="0.0007630455438845261 -0.006235017668486397 -0.029622945310892365" fullinertia="7.203919251045835e-07 7.176102024294442e-07 3.7889198260418135e-08 -6.350465712908806e-09 -7.204797574267683e-08 -5.568731692885728e-08" />
                                                         <body name="index_pip" pos="-0.0018818761480394808 -0.0008815298043677631 -0.00028810464600790084" euler="0 0 0">
-                                                            <joint name="index_mcp_joint" type="hinge" axis="0.0829114977452631 0.9889924352920814 -0.12255769909179605" pos="0.003997787519080691 -0.0022930342707544993 -0.0036026135443139188" range="-0.07 1.2" />
+                                                            <joint name="index_mcp_joint" type="hinge" axis="0.0829114977452631 0.9889924352920814 -0.12255769909179605" pos="0.003997787519080691 -0.0022930342707544993 -0.0036026135443139188" range="-0.05 1.2" />
                                                             <geom name="index_pip_geom" type="mesh" mesh="index_pip" pos="0 0 0" euler="0 0 0" />
                                                             <inertial mass="0.0021444203613001857" pos="0.00616249713405128 0.001113157538089684 0.019767080551606347" fullinertia="3.6778656000740344e-07 3.644932303677848e-07 5.064241210672507e-08 -1.289619079192424e-08 -6.642796013679761e-08 -6.123343780222579e-08" />
                                                             <body name="index_mip" pos="-0.0007905232980045404 6.774307021503057e-05 -4.470760212160751e-06" euler="0 0 0">
                                                                 <!-- Axis negated (was sign-flipped in the export) so all
                                                                      three index joints flex with positive angles. -->
-                                                                <joint name="index_pip_joint" type="hinge" axis="0.08446158877691883 0.9707984145951304 -0.22453428016643545" pos="0.012657508965446986 0.005544495701699416 0.040038639036086024" range="-0.1 1.6" />
+                                                                <joint name="index_pip_joint" type="hinge" axis="0.08446158877691883 0.9707984145951304 -0.22453428016643545" pos="0.012657508965446986 0.005544495701699416 0.040038639036086024" range="-0.07 1.58" />
                                                                 <geom name="index_mip_geom" type="mesh" mesh="index_mip" pos="0 0 0" euler="0 0 0" />
                                                                 <inertial mass="0.0009714570127921473" pos="0.01819648811754023 0.007770043746342353 0.052982889174823654" fullinertia="5.978342976135752e-08 6.979635583189134e-08 2.4211093733600867e-08 -5.600830653989934e-09 -2.6294449246389445e-08 -1.0575520825231265e-08" />
                                                                 <body name="index_tip" pos="-0.0005223320767289047 0.00010832322490450245 0.00015462217363761973" euler="0 0 0">
-                                                                    <joint name="index_mip_joint" type="hinge" axis="0.13623559085602027 0.9666259862093993 -0.21696551011581627" pos="0.02714214619949691 0.010446881348426989 0.06597982917587512" range="-0.1 1.6" />
+                                                                    <joint name="index_mip_joint" type="hinge" axis="0.13623559085602027 0.9666259862093993 -0.21696551011581627" pos="0.02714214619949691 0.010446881348426989 0.06597982917587512" range="-0.03 0.52" />
                                                                     <geom name="index_tip_geom" type="mesh" mesh="index_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <!-- Moulded pad centre. Measured 29 Sep: 9mm along the finger,
+                                                                         8mm palm-ward, 4mm toward the knuckle, from the printed
+                                                                         fingertip contour. 28.3mm from the DIP anchor. -->
+                                                                    <site name="index_fingertip" pos="0.049663 0.014976 0.082441" size="0.003" rgba="1 0.2 0.2 1" />
+                                                                    <!-- Silicone pad stand-in: the only index geom with contact. -->
+                                                                    <geom name="index_pad" type="sphere" pos="0.049663 0.014976 0.082441" size="0.004"
+                                                                          contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
+                                                                          solref="0.01 1" rgba="1 0.5 0.5 0.6" />
                                                                     <!-- TUNE: index fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.00022374756261357617" pos="0.031581250153481295 0.010651476627436785 0.07194223856503318" fullinertia="3.0123603941717283e-09 4.307530852387817e-09 2.4495403212269777e-09 -2.50132877986767e-10 -1.9127097604265335e-09 -1.4430492850129868e-10" />
@@ -367,8 +388,12 @@
                                                          thumb_mcp_joint = ADDUCTION (independent, actuated)
                                                          thumb_pip_joint = thumb MCP flexion (leader, actuated)
                                                          thumb_tip_joint = thumb IP (follower, 1.273 x MCP)
-                                                         Leader range capped at 1.25 so IP (1.273 x 1.25 = 1.59)
-                                                         stays inside its 1.6 limit. -->
+                                                         Leader capped at 1.25 so IP (1.273 x 1.25 = 1.59)
+                                                         stays inside its limit. The pinch closes at thumb
+                                                         flexion 0.909 and adduction 0.764, both inside these
+                                                         ranges and both close to the calibration-derived
+                                                         0.9215 / 0.6353 - so the thumb figures look right
+                                                         and only the index one is suspect. -->
                                                     <body name="saddle_2-1" pos="-0.03960019073649625 0.0229600158415783 -0.01811433259381779" euler="-0.3980927427866039 -0.5706305012311939 0.12210328989722553">
                                                         <geom name="saddle_2-1_geom" type="mesh" mesh="saddle_2-1" pos="0 0 0" euler="0 0 0" />
                                                         <inertial mass="0.0003283443058449118" pos="-0.0017265047715689479 -0.0061243580874248485 -0.07244958103825341" fullinertia="3.3936276071904313e-09 3.180738293003167e-09 3.4753285999458993e-09 -2.9030020960274333e-10 1.5666654563752676e-10 2.24311188665142e-10" />
@@ -378,17 +403,23 @@
                                                             <inertial mass="0.00013195097259749224" pos="0.0036971860451918415 0.00010559639146807617 -0.07635541364692247" fullinertia="1.0400942294384975e-09 1.1333127048646865e-09 9.433034532040586e-10 2.398528456893289e-10 -1.412756983807064e-10 -1.7137161712883162e-10" />
                                                         </body>
 
-                                                        <body name="thumb_mcp" pos="0.0021453491196629136 -0.0020145354547877583 0.00030912641512052195" euler="0.036453494672958456 0.033734051039132545 0.05732562037171141">
-                                                            <joint name="thumb_mcp_joint" type="hinge" axis="0.5790969359845877 0.7024620204026814 -0.4137570549574289" pos="0.0015855996722578154 -0.0025505869944444093 -0.07507465596332252" range="-0.8 0.8" />
+                                                        <body name="thumb_mcp" pos="0.04403730748006923 -0.05399453293709578 -0.04179291369196527" euler="1.053581057897081 0.5929112057469996 -0.8604616211169168">
+                                                            <joint name="thumb_mcp_joint" type="hinge" axis="0.5790970265895501 0.7024620126630433 -0.41375694128621937" pos="0.0015861023140251972 -0.002550801519351907 -0.07507431667551627" range="-1.27 0.1" />
                                                             <geom name="thumb_mcp_geom" type="mesh" mesh="thumb_mcp" pos="0 0 0" euler="0 0 0" />
                                                             <inertial mass="0.0031964878294729855" pos="0.006487333144093596 0.010654646439088266 -0.05238180539651145" fullinertia="6.359653778281489e-07 5.189994243964036e-07 2.339197508499623e-07 -6.785844122453571e-08 -1.1484263924318462e-07 -2.609606985324891e-07" />
-                                                            <body name="thumb_pip" pos="-6.929649061166998e-06 0.003026666397561999 0.0010078647908988404" euler="-0.08354652393734315 -0.00900454254044747 0.023178826383541">
-                                                                <joint name="thumb_pip_joint" type="hinge" axis="0.9585196345363903 0.09202462407596668 -0.26976398059952744" pos="0.01295026894752142 0.02201864601106759 -0.03165993797287191" range="-0.07 1.25" />
+                                                            <body name="thumb_pip" pos="-0.00023616191244172136 0.0006105496303930203 -0.000630848660770571" euler="-1.3877787807814447e-16 1.1102230246251558e-16 -5.273559366969486e-16">
+                                                                <joint name="thumb_pip_joint" type="hinge" axis="0.9585194140790065 0.0920248878503799 -0.2697634456162764" pos="0.012950834935384691 0.0220193435119454 -0.03165933512261687" range="-0.05 1.25" />
                                                                 <geom name="thumb_pip_geom" type="mesh" mesh="thumb_pip" pos="0 0 0" euler="0 0 0" />
                                                                 <inertial mass="0.0011426311195010183" pos="0.015008214362312792 0.026625529322924703 -0.01809805044800632" fullinertia="1.0254209747600245e-07 1.03806195308209e-07 1.853417495990764e-08 -4.2045143305080416e-09 -1.7987383422350828e-08 -1.87475532922439e-08" />
-                                                                <body name="thumb_tip" pos="-0.007589309059437079 0.012753310408069502 -0.014409994019793218" euler="0.9236831871808644 0.14809454188013826 -0.31293658977939115">
-                                                                    <joint name="thumb_tip_joint" type="hinge" axis="0.9282701597554996 0.29164697109448723 -0.23077495620173039" pos="0.019798385498564303 0.02828395279858669 -0.00030953313631723947" range="-0.1 1.6" />
+                                                                <body name="thumb_tip" pos="-0.0007707276830984534 0.0009567503239839525 -0.0018910635154813205" euler="0.08127419428278157 0.024605983372784385 -0.021151550760479348">
+                                                                    <joint name="thumb_tip_joint" type="hinge" axis="0.9282695280475818 0.2916469346832644 -0.23077503896474005" pos="0.019798405851262933 0.02828320946718574 -0.0003099632301785091" range="-0.07 1.6" />
                                                                     <geom name="thumb_tip_geom" type="mesh" mesh="thumb_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <!-- Moulded pad centre, same measurement. 33.6mm from the IP anchor. -->
+                                                                    <site name="thumb_fingertip" pos="0.029295 0.033755 0.031467" size="0.003" rgba="1 0.2 0.2 1" />
+                                                                    <!-- Silicone pad stand-in: the only thumb geom with contact. -->
+                                                                    <geom name="thumb_pad" type="sphere" pos="0.029295 0.033755 0.031467" size="0.004"
+                                                                          contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
+                                                                          solref="0.01 1" rgba="1 0.5 0.5 0.6" />
                                                                     <!-- TUNE: thumb fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.0003721523600156387" pos="0.02162607049174598 0.02784281296254021 0.010352768596363577" fullinertia="1.2865109962965175e-08 1.3725466630540284e-08 2.0819735411911066e-09 1.1929345267125193e-10 -2.5803675084034894e-09 1.083964558977824e-09" />
@@ -416,11 +447,11 @@
                  d.eq_active[i] = 0     # let go
                  d.eq_active[i] = 1     # grip again
              ================================================== -->
-        <!--body name="needle" pos="-0.0379 0.0288 0.3946" euler="0 0 0">
+        <body name="needle" pos="-0.0379 0.0288 0.3946" euler="0 0 0">
             <freejoint name="needle_free" />
             <geom name="needle_geom" type="mesh" mesh="craft_needle" pos="0 0 0" euler="0 0 0"
                   contype="1" conaffinity="1" rgba="0.85 0.85 0.88 1" mass="0.0005" />
-        </body-->
+        </body>
     </worldbody>
 
     <equality>
@@ -444,7 +475,7 @@
         <position name="a_forearm_roll"    joint="forearm_roll"      kp="600"   ctrlrange="-3.14 3.14" />
         <position name="a_wrist_tilt"      joint="wrist_tilt"        kp="600"   ctrlrange="-1.4 1.4" />
 
-        <position name="a_index_mcp"       joint="index_mcp_joint"   ctrlrange="-0.07 1.2" />
+        <position name="a_index_mcp"       joint="index_mcp_joint"   ctrlrange="-0.05 1.2" />
 
         <position name="a_mid_mcp"         joint="mid_mcp_joint"     ctrlrange="-0.1 1.6" />
         <position name="a_mid_pip"         joint="middle_pip_joint"  ctrlrange="-0.1 1.6" />
@@ -458,7 +489,7 @@
         <position name="a_small_pip"       joint="small_pip_joint"   ctrlrange="-0.1 1.6" />
         <position name="a_small_mip"       joint="small_mip_joint"   ctrlrange="-0.1 1.6" />
 
-        <position name="a_thumb_mcp"       joint="thumb_mcp_joint"   ctrlrange="-0.8 0.8" />   <!-- adduction -->
-        <position name="a_thumb_pip"       joint="thumb_pip_joint"   ctrlrange="-0.07 1.25" /> <!-- thumb flexion (leader) -->
+        <position name="a_thumb_mcp"       joint="thumb_mcp_joint"   ctrlrange="-1.27 0.1" />   <!-- adduction -->
+        <position name="a_thumb_pip"       joint="thumb_pip_joint"   ctrlrange="-0.05 1.25" /> <!-- thumb flexion (leader) -->
     </actuator>
 </mujoco>

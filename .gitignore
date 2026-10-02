@@ -13,3 +13,7 @@ pretrained_models/
 video_out/
 out_demo/
 angle_map/
+out_so/
+data_capture_ML/images/
+test_frame.png
+position_log.csv

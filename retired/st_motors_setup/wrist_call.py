@@ -1,7 +1,13 @@
-from scservo_sdk import *
-port = PortHandler('/dev/ttyACM0')
-packet = sms_sts(port)
-port.openPort()
-port.setBaudRate(1000000)
-packet.WritePosEx(0xFE, 2048, 300, 50)   # 254 = broadcast
-port.closePort()
+from arm import ST_PORT_LINUX, ST_BAUD, STBus
+
+
+def main():
+    bus = STBus()
+    bus.open_port(ST_PORT_LINUX)
+    bus.set_baud(ST_BAUD)
+    bus.broadcast(2048, 300, 50)   # 254 = broadcast
+    bus.close()
+
+
+if __name__ == "__main__":
+    main()

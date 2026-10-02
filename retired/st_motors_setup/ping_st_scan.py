@@ -1,20 +1,20 @@
-from scservo_sdk import *
+from arm import ST_PORT_LINUX, ST_BAUD, STBus
 
-port = PortHandler('/dev/ttyACM0')
-packet = sms_sts(port)
 
-if not port.openPort():
-    raise SystemExit("failed to open port")
-if not port.setBaudRate(1000000):
-    raise SystemExit("failed to set baud")
+def main():
+    bus = STBus()
+    if not bus.open_port(ST_PORT_LINUX):
+        raise SystemExit("failed to open port")
+    if not bus.set_baud(ST_BAUD):
+        raise SystemExit("failed to set baud")
 
-found = 0
-for sid in range(1, 21):
-    model, comm, err = packet.ping(sid)
-    if comm == COMM_SUCCESS:
-        pos, comm2, err2 = packet.ReadPos(sid)
+    found = bus.ping_scan(range(1, 21))
+    for sid, model, pos in found:
         print(f"ID {sid}  model {model}  pos {pos}")
-        found += 1
 
-print(f"{found} servo(s) found")
-port.closePort()
+    print(f"{len(found)} servo(s) found")
+    bus.close()
+
+
+if __name__ == "__main__":
+    main()
