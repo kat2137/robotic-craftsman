@@ -22,3 +22,4 @@ WiLoR/
 mano_data/
 *.pt
 *.ckpt
+main_motion/calib/data/Screenshot*
