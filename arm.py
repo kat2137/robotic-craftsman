@@ -35,13 +35,15 @@ NPZ_PATH = ROOT / "handsewing_01.npz"
 ST_PORT_LINUX = "/dev/ttyACM0"
 ST_BAUD = 1000000
 ST_BROADCAST_ID = 0xFE        # 254 = broadcast
-COUNTS_PER_DEG = 4096 / 360   # STS3215: 4096 counts per turn
+COUNTS_PER_DEG = 4096 / 360
+GEAR_RATIO = {1:1.0, 2:1.0, 3:2.0}   # STS3215: 4096 counts per turn
+
 
 ST_SERVOS = {
     "wrist rotate": {"id": 1, "pos": 2059, "straight": 2048, "flexed": 4095, "min": 2000, "max": 4095},
     "wrist tilt":   {"id": 2, "pos": 2043, "straight": 2048, "flexed": 4095, "min": 2200, "max": 3000},
     # TODO: calibrate elbow - pos/straight/flexed are placeholders, no limits yet
-    "elbow":        {"id": 3, "pos": 2048, "straight": 2048, "flexed": 4095, "min": None, "max": None},
+    "elbow":        {"id": 3, "pos": 3052, "straight": 2048, "flexed": 4095, "min": None, "max": None},
 }
 
 # --- PCA9685 finger servos ---------------------------------------------------
@@ -223,6 +225,7 @@ class STBus:
 
     def servo_by_id(self, servo_id: int) -> "STServo":
         for name, cfg in ST_SERVOS.items():
+            min, max = cfg["min"], cfg["max"]
             if cfg["id"] == servo_id:
                 return self.servo(name)
         return STServo(id=servo_id, pos=0, straight=0, flexed=0, portHandler=self.portHandler)
@@ -253,7 +256,8 @@ class STServo:
     max: Optional[int] = None
     ZERO_COUNTS = {
         1: 2000,
-        2: 3000
+        2: 3000,
+        3: 3052
         }
 
     def __post_init__(self):
@@ -332,12 +336,26 @@ class STServo:
 
         print(f"timeout waiting for servo {self.id}")
         return reached
-    
-    def sim_to_real(self, id:int, angle_rad:float, dir:int):
-            if id not in (1,2):
+    @staticmethod
+    def sim_to_real(id:int, angle_rad:float, dir:int):
+            if np.isnan(angle_rad):
+                raise ValueError(f"invalid angle value")
+            if dir not in (-1, 1):
+                raise ValueError(f"Direction needs to be either 1 or -1.")
+            if id not in STServo.ZERO_COUNTS:
                 raise ValueError(f"no zero calibration for servo {id}")
             else:
-                counts = STServo.ZERO_COUNTS[id] + dir * np.degrees(angle_rad) * 11.4
+                counts = STServo.ZERO_COUNTS[id] + dir * GEAR_RATIO[id] * np.degrees(angle_rad) * COUNTS_PER_DEG
+                if not 0 <= counts <= 4095:
+                    raise ValueError(f"Katarzyna, these counts are unacceptable! Your robot can't do these!")
+                for ix, val in ST_SERVOS.items():
+                    if val["id"] == id:
+                        lo, hi = val["min"], val["max"]
+                        if lo is None and hi is None:
+                            continue
+                        else: 
+                            print('Joint has a set range limit')
+                            return int(np.clip(counts, lo, hi))
             return int(round(counts))
 
 
