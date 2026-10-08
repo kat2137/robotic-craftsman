@@ -9,7 +9,7 @@ A robotic arm and two-finger hand built to reproduce hand-sewing on flimsy fabri
 
 Project page: https://kat2137.github.io/dlugosz-site/
 
-- **Own data:** all footage was collected by me. I filmed myself and other sewers on a Canon camera on a small tripod (fixed viewpoint, right hand sewing through fabric). The sample clip `handsewing_01` is <my own hand / sewer N>. Sample: `assets/media/handsewing-footage.mp4`.
+- **Own data:** all footage was collected by me. I filmed myself and other sewers on a Canon camera on a small tripod (fixed viewpoint, right hand sewing through fabric). Sample: `assets/media/handsewing-footage.mp4`.
 <img src="assets/media/hania-capture-still.jpg" width="60%">
 <sub>Capture setup: Canon camera on a tripod, fixed viewpoint.</sub>
 
