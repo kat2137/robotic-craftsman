@@ -20,16 +20,17 @@ Project page: https://kat2137.github.io/dlugosz-site/
 ## Pipeline
 footage → WiLoR (21 keypoints/frame + camera translation) → hand-size scaling → vector-based retargeting (scipy optimiser) for fingers + hybrid elbow/wrist → MuJoCo replay → real arm (ST3215 servos, Jetson Orin Nano)
 <p>
-<img src="assets/media/hania-capture-still.jpg" width="32%">
-<img src="assets/media/hania-cad-render.jpg" width="32%">
-<img src="assets/media/cad-joints.jpg" width="32%">
+<img src="assets/media/p1-footage.jpg" height="180">
+<img src="assets/media/p3-sim.jpg" height="180">
+<img src="assets/media/pinch-pads.jpg" height="180">
 </p>
-<sub>Footage → CAD → joint frames used for forward kinematics</sub>
+<sub>Own footage → retargeted in MuJoCo → real hand</sub>
 
 - **Fingers:** joint angles are optimised so the robot's key vectors (wrist→fingertips, thumb↔index) match the scaled human ones.
 - **Elbow:** follows the wrist's travel from WiLoR camera translation.
 - **Wrist roll/tilt:** taken from palm orientation, not full position IK (more stable on noisy WiLoR wrist estimates).
 - **Kinematics:** forward kinematics built from the CAD with Rodrigues' rotation formula; IK for the serial arm (law of cosines). Based on Jazar, *Theory of Applied Robotics*.
+<img src="assets/media/cad-joints.jpg" width="40%">
 
 ## Results
 <p><img src="assets/media/sim-grasp.gif" width="49%"> <img src="assets/media/real_sim.gif" width="49%"></p>
@@ -47,15 +48,19 @@ python main_motion/<replay_script>.py --angles <solved_angles>.npz     # render 
 WiLoR is not bundled (MANO licence). To process new footage, install WiLoR separately and run `visualize_pose_videos.py`, then `glob_json.py`.
 
 ## Design choices
-- **Vector retargeting over per-joint angle mapping.** Copying human joint angles ignores the different link lengths of the robot hand. Matching vectors preserves the pinch, which is what holds the needle.
-- **Hybrid elbow/wrist over full IK.** WiLoR's wrist position is relative to the fingers and is noisy, so full position IK jittered.
+- **Vector retargeting over per-joint angle mapping.** Copying human joint angles ignores the different link lengths of the robot hand. Matching key vectors (wrist→fingertips, thumb↔index) preserves the pinch, which is what holds the needle.
+- **Hybrid elbow/wrist over full IK.** WiLoR's wrist position is relative to the fingers and noisy, so full position IK jittered. The elbow follows the wrist's travel from camera translation; wrist roll/tilt come from palm orientation.
 - **Two fingers, not five.** The needle grip is a thumb–index pinch. Narrowing the scope made the real hardware reliable.
-- **Pinch switch for needle detection.** A conductive-thread pad on each fingertip; holding the needle bridges the pads, read directly by the Jetson.
+- **Pinch switch for needle detection.** A conductive-thread pad is stitched through each silicone fingertip cap, with the index and thumb pads facing each other. Each pad is wired to the Jetson. Holding the needle between them bridges the pads.
 
-<p>
-<img src="assets/media/hania-needle-grip.jpg" width="49%">
-<img src="assets/media/fingertip-pad.jpg" width="49%">
-</p>
+  <p>
+  <img src="assets/media/pinch-pads.jpg" height="260">
+  <img src="assets/media/fingertip-pads-closeup.jpg" height="260">
+  </p>
+
+- **One tendon per finger, spring return.** Each finger is flexed by a single Dyneema tendon routed through printed guides. Extension springs pull it back open, so each finger needs one actuator rather than an antagonistic tendon pair.
+
+  <img src="assets/media/hand-springs-tendons.jpg" height="260">
 
 ## What didn't work
 - Per-joint angle mapping (see `notes.md`).
