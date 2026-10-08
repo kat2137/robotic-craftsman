@@ -1,6 +1,5 @@
 # The Robotic Craftsman
 
-![Hand-sewing footage → WiLoR hand pose → robot replay in MuJoCo](assets/media/retarget-replay.gif)
 <p>
 <img src="assets/media/hania-turntable.gif" width="35%">
 <img src="assets/media/retarget-replay.gif" width="63%">
