@@ -15,12 +15,17 @@ Project page: https://kat2137.github.io/dlugosz-site/
 
 - **Challenging embodiment:** human hand → servo arm with a two-finger tendon-driven hand. Task: needle manipulation in deformable fabric.
 
+  <p>
+<img src="assets/media/footage-sheet.jpg" width="49%">
+<img src="assets/media/sim-sheet.jpg" width="49%">
+</p>
+<sub>Left: own footage, one frame every 5 s. Right: the same sequence retargeted in MuJoCo.</sub>
+
 - **Sim:** retargeted trajectories replayed in MuJoCo on the robot's own MJCF model (`model/palm.xml`, meshes exported from my Fusion 360 CAD).
 
 ## Pipeline
 footage → WiLoR (21 keypoints/frame + camera translation) → hand-size scaling → vector-based retargeting (scipy optimiser) for fingers + hybrid elbow/wrist → MuJoCo replay → real arm (ST3215 servos, Jetson Orin Nano)
 <p>
-<img src="assets/media/p1-footage.jpg" height="180">
 <img src="assets/media/p3-sim.jpg" height="180">
 <img src="assets/media/pinch-pads.jpg" height="180">
 </p>
