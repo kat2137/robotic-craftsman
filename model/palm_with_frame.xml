@@ -81,6 +81,7 @@
         <mesh name="fr_outer_frame-1" file="meshes/outer_frame-1.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_inside_frame" file="meshes/inside_frame.stl" scale="0.001 0.001 0.001" />
         <mesh name="fr_top_clipper" file="meshes/top_clipper.stl" scale="0.001 0.001 0.001" />
+        <mesh name="finger_pad" file="meshes/finger_pad.stl" scale="0.001 0.001 0.001" />
         <mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001"/>
     </asset>
 
@@ -371,10 +372,15 @@
                                                                          8mm palm-ward, 4mm toward the knuckle, from the printed
                                                                          fingertip contour. 28.3mm from the DIP anchor. -->
                                                                     <site name="index_fingertip" pos="0.049663 0.014976 0.082441" size="0.003" rgba="1 0.2 0.2 1" />
-                                                                    <!-- Silicone pad stand-in: the only index geom with contact. -->
-                                                                    <geom name="index_pad" type="sphere" pos="0.049663 0.014976 0.082441" size="0.004"
+                                                                    <!-- Silicone cap over the fingertip (black sensor side + white back).
+                                                                         Collision uses the mesh's convex hull = outer surface of the cap.
+                                                                         Fusion cap mesh (finger_pad.stl), exported in the index_tip frame. -->
+                                                                    <geom name="index_pad" type="mesh" mesh="finger_pad" pos="0 0 0"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
                                                                           solref="0.01 1" rgba="1 0.5 0.5 0.6" />
+                                                                    <!-- Conductive-thread sensor patch (gold square) on the black side of the cap.
+                                                                         Box straddles the cap surface so contacts there count. -->
+                                                                    <site name="index_touch_site" type="box" pos="0.0416 0.0087 0.0693" zaxis="0.6622 -0.2582 -0.7034" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: index fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.00022374756261357617" pos="0.031581250153481295 0.010651476627436785 0.07194223856503318" fullinertia="3.0123603941717283e-09 4.307530852387817e-09 2.4495403212269777e-09 -2.50132877986767e-10 -1.9127097604265335e-09 -1.4430492850129868e-10" />
@@ -416,10 +422,14 @@
                                                                     <geom name="thumb_tip_geom" type="mesh" mesh="thumb_tip" pos="0 0 0" euler="0 0 0" />
                                                                     <!-- Moulded pad centre, same measurement. 33.6mm from the IP anchor. -->
                                                                     <site name="thumb_fingertip" pos="0.029295 0.033755 0.031467" size="0.003" rgba="1 0.2 0.2 1" />
-                                                                    <!-- Silicone pad stand-in: the only thumb geom with contact. -->
-                                                                    <geom name="thumb_pad" type="sphere" pos="0.029295 0.033755 0.031467" size="0.004"
+                                                                    <!-- Same cap mesh, moved from the index frame onto the thumb print:
+                                                                         distal end, finger axis and palmar side matched. -->
+                                                                    <geom name="thumb_pad" type="mesh" mesh="finger_pad" pos="0.01117 0.00991 -0.06252" quat="0.84408 -0.17353 -0.20530 -0.46398"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
                                                                           solref="0.01 1" rgba="1 0.5 0.5 0.6" />
+                                                                    <!-- Conductive-thread sensor patch (gold square) on the black side of the cap.
+                                                                         Box straddles the cap surface so contacts there count. -->
+                                                                    <site name="thumb_touch_site" type="box" pos="0.0259 0.0183 0.0170" zaxis="0.2312 -0.9431 -0.2392" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: thumb fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.0003721523600156387" pos="0.02162607049174598 0.02784281296254021 0.010352768596363577" fullinertia="1.2865109962965175e-08 1.3725466630540284e-08 2.0819735411911066e-09 1.1929345267125193e-10 -2.5803675084034894e-09 1.083964558977824e-09" />
@@ -492,4 +502,8 @@
         <position name="a_thumb_mcp"       joint="thumb_mcp_joint"   ctrlrange="-1.27 0.1" />   <!-- adduction -->
         <position name="a_thumb_pip"       joint="thumb_pip_joint"   ctrlrange="-0.05 1.25" /> <!-- thumb flexion (leader) -->
     </actuator>
+    <sensor>
+        <touch name="index_touch" site="index_touch_site" />
+        <touch name="thumb_touch" site="thumb_touch_site" />
+    </sensor>
 </mujoco>

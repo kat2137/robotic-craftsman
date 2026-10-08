@@ -17,3 +17,8 @@ out_so/
 data_capture_ML/images/
 test_frame.png
 position_log.csv
+
+WiLoR/
+mano_data/
+*.pt
+*.ckpt
