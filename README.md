@@ -1,4 +1,4 @@
-# The Robotic Craftsman (Hania)
+# The Robotic Craftsman
 
 <p>
 <img src="assets/media/hania-turntable.gif" width="35%">
