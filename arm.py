@@ -28,7 +28,7 @@ FINGER_CALIB_PATH = ROOT / "finger_calib.json"
 RATIOS_PATH = ROOT / "main_motion" / "ratios.json"
 SCALES_PATH = ROOT / "main_motion" / "scale_retarget.json"
 XML_PATH = ROOT / "model" / "palm_with_frame.xml"
-NPZ_PATH = ROOT / "handsewing_01.npz"
+NPZ_PATH = ROOT / "imitation01.npz"
 
 # --- ST bus servos (wrist rotate, wrist tilt, elbow) ------------------------
 

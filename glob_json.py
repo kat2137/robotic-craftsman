@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 
 
 def main():
-    files = sorted((HERE / "out_demo").glob("frame*.json"), key=frame_num)
+    files = sorted((HERE / "new_out").glob("frame*.json"), key=frame_num)
     # numbers the frames and puts them into a dict
     frames = [frame_num(p) for p in files]
     #by_num = dict(zip(frames, files))
@@ -31,7 +31,7 @@ def main():
         if "confidence" in data:
             conf[i] = data["confidence"]
 
-    np.savez(HERE / "handsewing_01.npz", joints=joints, camera_translation=cam, confidence=conf, focal_length=foc)
+    np.savez(HERE / "imitation01.npz", joints=joints, camera_translation=cam, confidence=conf, focal_length=foc)
 
 if __name__ == "__main__":
     main()

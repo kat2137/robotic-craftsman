@@ -20,8 +20,8 @@ from ultralytics import YOLO
 
 def main():
     parser = argparse.ArgumentParser(description='WiLoR demo for robot arm - no rendering, video input')
-    parser.add_argument('--video', type=str, default='/Users/katarzynadlugosz/Downloads/sewing_recording.mp4', help='Path to input video')
-    parser.add_argument('--out_folder', type=str, default='video_out', help='Output folder to save pose data')
+    parser.add_argument('--video', type=str, default='/Users/katarzynadlugosz/Downloads/new_imitation.mp4', help='Path to input video')
+    parser.add_argument('--out_folder', type=str, default='new_out', help='Output folder to save pose data')
     parser.add_argument('--save_mesh', dest='save_mesh', action='store_true', default=False, help='If set, save meshes to disk')
     parser.add_argument('--rescale_factor', type=float, default=2.0, help='Factor for padding the bbox')
     parser.add_argument('--file_type', nargs='+', default=['*.jpg', '*.png', '*.jpeg'], help='List of file extensions to consider')
@@ -84,7 +84,7 @@ def main():
         print(f"  Found {len(bboxes)} hand(s)")
         
         frame_name = f"frame{frame_idx:06d}"
-        frame_path = os.path.join(args.out_folder, f"{frame_name}.png")
+        frame_path = os.path.join(args.out_folder, f"{frame_name}_new.png")
         cv2.imwrite(frame_path, img_cv2)
         boxes = np.stack(bboxes)
         right = np.stack(is_right)

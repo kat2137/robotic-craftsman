@@ -123,15 +123,15 @@ def main():
             sim.set_ctrl("a_wrist_tilt", np.radians(tilt + init_tilt))
             sim.set_ctrl("a_forearm_roll", np.radians(roll + init_roll))
             sim.set_ctrl("a_elbow_pitch", np.radians(elbow_tilt))
-            ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), np.radians(result.x[2]), np.radians(result.x[0]), np.radians(result.x[1])])
+            ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), (result.x[0]), (result.x[1]), (result.x[2])])
             for _ in range(int((1/30) / model.opt.timestep)):
                 sim.step()
                 frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
     solved = np.array([r[1] for r in results])
-    np.savez(ROOT / "solved_angles_new.npz", cost=costs, angles=solved)
-    np.savez(ROOT / "refs" / "clip01.npz", q_ref=np.array(ref_frames), fps=30)
-    media.write_video(str(ROOT / "real_sim6.mp4"), frames, fps=30)
+    np.savez(ROOT / "solved_angles_new2.npz", cost=costs, angles=solved)
+    np.savez(ROOT / "refs" / "clip02.npz", q_ref=np.array(ref_frames), fps=30)
+    media.write_video(str(ROOT / "real_sim7.mp4"), frames, fps=30)
 
 
 if __name__ == "__main__":
