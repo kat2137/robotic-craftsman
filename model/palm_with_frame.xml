@@ -12,8 +12,15 @@
          + tendon coupling (equality constraints) for index and thumb
          ================================================================ -->
 
-    <compiler angle="radian" meshdir="." />
-    <option timestep="0.001" gravity="0 0 0" integrator="implicitfast" />
+    <!-- fitaabb: capsules given a mesh= are sized to the mesh's bounding box
+         (tighter than the default inertia fit; puts the pad capsules' surface
+         on the gold touch sites). -->
+    <compiler angle="radian" meshdir="." fitaabb="true" />
+    <option timestep="0.002" gravity="0 0 0" integrator="implicitfast" />
+    <!-- offscreen buffer for 1080p video renders -->
+    <visual>
+        <global offwidth="1920" offheight="1080" />
+    </visual>
 
     <default>
         <!-- TUNE: contacts are OFF by default so the model loads and moves
@@ -97,18 +104,21 @@
              enters the dynamics, so the ~10 kg Fusion default density would
              have done nothing anyway.
 
+             13 Oct: frame collisions OFF (contype/conaffinity 0) - the 8 frame
+             meshes colliding with each other blew up MJX compile memory.
+
              MOVE THE FRAME WITH THE pos= BELOW. Frame geometry spans roughly
              x -0.07..0.00, y 0.00..0.29, z 0.00..0.40 in its own export frame.
              ================================================================ -->
         <body name="sewing_frame" pos="-0.187 -0.135 0" euler="0 0 0">
-            <geom name="fr_base-1_geom" type="mesh" mesh="fr_base-1" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_arm1-1_geom" type="mesh" mesh="fr_arm1-1" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_arm2-1_geom" type="mesh" mesh="fr_arm2-1" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_frame_clipper1_geom" type="mesh" mesh="fr_frame_clipper1" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_frame_clipper2_geom" type="mesh" mesh="fr_frame_clipper2" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_outer_frame-1_geom" type="mesh" mesh="fr_outer_frame-1" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_inside_frame_geom" type="mesh" mesh="fr_inside_frame" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
-            <geom name="fr_top_clipper_geom" type="mesh" mesh="fr_top_clipper" pos="0 0 0" euler="0 0 0" contype="1" conaffinity="1" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_base-1_geom" type="mesh" mesh="fr_base-1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_arm1-1_geom" type="mesh" mesh="fr_arm1-1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_arm2-1_geom" type="mesh" mesh="fr_arm2-1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_frame_clipper1_geom" type="mesh" mesh="fr_frame_clipper1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_frame_clipper2_geom" type="mesh" mesh="fr_frame_clipper2" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_outer_frame-1_geom" type="mesh" mesh="fr_outer_frame-1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_inside_frame_geom" type="mesh" mesh="fr_inside_frame" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <geom name="fr_top_clipper_geom" type="mesh" mesh="fr_top_clipper" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
         </body>
 
         <geom name="floor" pos="0 0 0" size="1 1 1" type="plane" rgba="1 0.83 0.61 0.5" contype="1" conaffinity="1" />
@@ -371,16 +381,21 @@
                                                                     <!-- Moulded pad centre. Measured 29 Sep: 9mm along the finger,
                                                                          8mm palm-ward, 4mm toward the knuckle, from the printed
                                                                          fingertip contour. 28.3mm from the DIP anchor. -->
-                                                                    <site name="index_fingertip" pos="0.049663 0.014976 0.082441" size="0.003" rgba="1 0.2 0.2 1" />
+                                                                    <site name="index_fingertip" pos="0.049663 0.014976 0.082441" size="0.003" rgba="1 0.2 0.2 1" group="4" />
                                                                     <!-- Silicone cap over the fingertip (black sensor side + white back).
-                                                                         Collision uses the mesh's convex hull = outer surface of the cap.
-                                                                         Fusion cap mesh (finger_pad.stl), exported in the index_tip frame. -->
-                                                                    <geom name="index_pad" type="mesh" mesh="finger_pad" pos="0 0 0"
+                                                                         Fusion cap mesh (finger_pad.stl), exported in the index_tip frame.
+                                                                         13 Oct: split for MJX. index_pad_vis = the mesh, display only.
+                                                                         index_pad = capsule auto-fitted to the same mesh, used for contact
+                                                                         (the 6510-vertex mesh made MJX run out of memory). -->
+                                                                    <geom name="index_pad_vis" type="mesh" mesh="finger_pad" pos="0 0 0"
+                                                                          contype="0" conaffinity="0" rgba="0.93 0.93 0.9 1" />
+                                                                    <geom name="index_pad" type="capsule" mesh="finger_pad" pos="0 0 0"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
-                                                                          solref="0.01 1" rgba="1 0.5 0.5 0.6" />
-                                                                    <!-- Conductive-thread sensor patch (gold square) on the black side of the cap.
+                                                                          solref="0.01 1" rgba="0.93 0.93 0.9 0" />
+                                                                    <!-- Conductive-thread sensor patch (gold square): placed where the caps meet in the pinch
+                                                                         (pose set by hand in the viewer 8 Oct: index 0.431, thumb flex -0.05, adduction -0.0233).
                                                                          Box straddles the cap surface so contacts there count. -->
-                                                                    <site name="index_touch_site" type="box" pos="0.0416 0.0087 0.0693" zaxis="0.6622 -0.2582 -0.7034" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
+                                                                    <site name="index_touch_site" type="box" pos="0.0425 0.0078 0.0707" zaxis="0.6796 -0.3927 -0.6196" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: index fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.00022374756261357617" pos="0.031581250153481295 0.010651476627436785 0.07194223856503318" fullinertia="3.0123603941717283e-09 4.307530852387817e-09 2.4495403212269777e-09 -2.50132877986767e-10 -1.9127097604265335e-09 -1.4430492850129868e-10" />
@@ -421,15 +436,19 @@
                                                                     <joint name="thumb_tip_joint" type="hinge" axis="0.9282695280475818 0.2916469346832644 -0.23077503896474005" pos="0.019798405851262933 0.02828320946718574 -0.0003099632301785091" range="-0.07 1.6" />
                                                                     <geom name="thumb_tip_geom" type="mesh" mesh="thumb_tip" pos="0 0 0" euler="0 0 0" />
                                                                     <!-- Moulded pad centre, same measurement. 33.6mm from the IP anchor. -->
-                                                                    <site name="thumb_fingertip" pos="0.029295 0.033755 0.031467" size="0.003" rgba="1 0.2 0.2 1" />
+                                                                    <site name="thumb_fingertip" pos="0.029295 0.033755 0.031467" size="0.003" rgba="1 0.2 0.2 1" group="4" />
                                                                     <!-- Same cap mesh, moved from the index frame onto the thumb print:
                                                                          distal end, finger axis and palmar side matched. -->
-                                                                    <geom name="thumb_pad" type="mesh" mesh="finger_pad" pos="0.01117 0.00991 -0.06252" quat="0.84408 -0.17353 -0.20530 -0.46398"
+                                                                    <!-- 13 Oct: same split as index_pad (mesh for display, fitted capsule for contact). -->
+                                                                    <geom name="thumb_pad_vis" type="mesh" mesh="finger_pad" pos="0.01117 0.00991 -0.06252" quat="0.84408 -0.17353 -0.20530 -0.46398"
+                                                                          contype="0" conaffinity="0" rgba="0.93 0.93 0.9 1" />
+                                                                    <geom name="thumb_pad" type="capsule" mesh="finger_pad" pos="0.01117 0.00991 -0.06252" quat="0.84408 -0.17353 -0.20530 -0.46398"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
-                                                                          solref="0.01 1" rgba="1 0.5 0.5 0.6" />
-                                                                    <!-- Conductive-thread sensor patch (gold square) on the black side of the cap.
+                                                                          solref="0.01 1" rgba="0.93 0.93 0.9 0" />
+                                                                    <!-- Conductive-thread sensor patch (gold square): placed where the caps meet in the pinch
+                                                                         (pose set by hand in the viewer 8 Oct: index 0.431, thumb flex -0.05, adduction -0.0233).
                                                                          Box straddles the cap surface so contacts there count. -->
-                                                                    <site name="thumb_touch_site" type="box" pos="0.0259 0.0183 0.0170" zaxis="0.2312 -0.9431 -0.2392" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
+                                                                    <site name="thumb_touch_site" type="box" pos="0.0256 0.0289 0.0291" zaxis="-0.0164 0.6175 0.7864" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: thumb fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.0003721523600156387" pos="0.02162607049174598 0.02784281296254021 0.010352768596363577" fullinertia="1.2865109962965175e-08 1.3725466630540284e-08 2.0819735411911066e-09 1.1929345267125193e-10 -2.5803675084034894e-09 1.083964558977824e-09" />
@@ -459,8 +478,12 @@
              ================================================== -->
         <body name="needle" pos="-0.0379 0.0288 0.3946" euler="0 0 0">
             <freejoint name="needle_free" />
-            <geom name="needle_geom" type="mesh" mesh="craft_needle" pos="0 0 0" euler="0 0 0"
-                  contype="1" conaffinity="1" rgba="0.85 0.85 0.88 1" mass="0.0005" />
+            <!-- 13 Oct: needle_vis = mesh, display only (mass 0 so the needle isn't double-weighted).
+                 needle_geom = capsule auto-fitted to the mesh, used for contact and mass. -->
+            <geom name="needle_vis" type="mesh" mesh="craft_needle" pos="0 0 0" euler="0 0 0"
+                  contype="0" conaffinity="0" rgba="0.85 0.85 0.88 1" mass="0" />
+            <geom name="needle_geom" type="capsule" mesh="craft_needle" pos="0 0 0" euler="0 0 0"
+                  contype="1" conaffinity="1" rgba="0.85 0.85 0.88 0" mass="0.0005" />
         </body>
     </worldbody>
 
