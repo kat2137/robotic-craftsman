@@ -10,6 +10,11 @@
          mechanical stop) and opens the upper bound to neutral. Pinch closes
          at adduction -0.864.
          + tendon coupling (equality constraints) for index and thumb
+         16 Oct: new elbow base merged from the 16 Oct Fusion export
+         (elbowbase-1, elbow-base-2, elbow-base-3, elbow servo "fits") plus
+         the forearm case and electronics boards. Joints, actuators, sensors
+         and the hand are unchanged; the elbow hinge in the new export has
+         the same axis and pivot as before.
          ================================================================ -->
 
     <!-- fitaabb: capsules given a mesh= are sized to the mesh's bounding box
@@ -90,6 +95,23 @@
         <mesh name="fr_top_clipper" file="meshes/top_clipper.stl" scale="0.001 0.001 0.001" />
         <mesh name="finger_pad" file="meshes/finger_pad.stl" scale="0.001 0.001 0.001" />
         <mesh name="craft_needle" file="meshes/Craft_Needle.STL" scale="0.001 0.001 0.001"/>
+
+        <!-- 16 Oct export: new elbow base. Copy these STLs from the export's
+             meshes folder into model/meshes/. -->
+        <mesh name="elbowbase-1" file="meshes/elbowbase-1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="elbow-base-2" file="meshes/elbow-base-2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="elbow-base-3" file="meshes/elbow-base-3.stl" scale="0.001 0.001 0.001" />
+        <!-- Elbow STS3215 servo. "fits" is the top-level occurrence; its mass (0.347)
+             is the sum of its sub-parts, so its STL already contains the servo
+             body and both horn plates (fits_STS3215_03a-v1_* are not needed). -->
+        <mesh name="elbow_servo" file="meshes/fits.stl" scale="0.001 0.001 0.001" />
+        <!-- Forearm case and electronics. The two board meshes are the top-level
+             occurrences (masses = sum of their components), so the ~200 per-pin /
+             per-resistor PCB meshes in the export are left out. -->
+        <mesh name="top_case" file="meshes/top_case.stl" scale="0.001 0.001 0.001" />
+        <mesh name="bottomcase" file="meshes/bottomcase.stl" scale="0.001 0.001 0.001" />
+        <mesh name="servo_driver_pca9685" file="meshes/815-Servo-Driver-16-Channel.stl" scale="0.001 0.001 0.001" />
+        <mesh name="bus_servo_adapter" file="meshes/Waveshare_bus_serie_adapter.stl" scale="0.001 0.001 0.001" />
     </asset>
 
     <worldbody>
@@ -125,6 +147,14 @@
 
         <body name="base1" pos="0 0 0.43" euler="0 0 0">
             <geom name="base1_geom" type="mesh" mesh="base1" pos="0 0 0" euler="0 0 0" />
+            <!-- 16 Oct: new elbow base. base1 has no joint, so these are static
+                 and visual only (contacts off via the default). The export's
+                 base frame is identical to this body's frame, so the parts sit
+                 at their CAD poses. -->
+            <geom name="elbowbase-1_geom" type="mesh" mesh="elbowbase-1" pos="0 0 0" quat="1 0 0 0" />
+            <geom name="elbow-base-3_geom" type="mesh" mesh="elbow-base-3" pos="0 0 0" quat="1 0 0 0" />
+            <geom name="elbow-base-2_geom" type="mesh" mesh="elbow-base-2" pos="0 0 0" quat="1 0 0 0" />
+            <geom name="elbow_servo_geom" type="mesh" mesh="elbow_servo" pos="0.072567838 -0.0425 -0.4085" quat="0.707106781 -0.707106781 0 0" rgba="0.15 0.15 0.15 1" />
             <!-- HARDWARE: printed shell 0.106 + 40T steel pulley 0.303 + 20T steel pulley
                  0.073 + HTD5M-9 belt 0.015 + STS3215 elbow servo 0.060 = 0.557 kg. -->
             <inertial mass="0.557" pos="0.03507294455526667 -0.0033303212525474858 -0.40908124270524016" fullinertia="5.60e-04 1.53e-03 1.22e-03 4.55e-05 4.54e-06 -7.62e-07" />
@@ -225,6 +255,27 @@
                                         <body name="servo_base" pos="0 0 0" euler="0 0 0">
                                             <geom name="servo_base_geom" type="mesh" mesh="servo_base" pos="0 0 0" euler="0 0 0" />
                                             <inertial mass="0.023347936296700286" pos="-0.0038914566166743034 -0.02241088109570979 -0.181257503300401" fullinertia="2.424398791605222e-05 2.4246744330059852e-05 2.5570147435155526e-06 -4.2755498445289e-08 -6.126642254392419e-08 6.309809646552328e-08" />
+
+                                            <!-- 16 Oct: forearm case + electronics (welded, roll with the
+                                                 forearm). Poses are the export poses relative to servo_base,
+                                                 so they stay aligned with it. Masses are Fusion's estimates;
+                                                 weigh the boards and the printed case and replace them. -->
+                                            <body name="top_case" pos="0.000498164027 -5.83956412e-05 7.92391409e-05" quat="1 0 0 0">
+                                                <geom name="top_case_geom" type="mesh" mesh="top_case" pos="0 0 0" quat="1 0 0 0" />
+                                                <inertial mass="0.039208357721498624" pos="-0.004441629438725011 -0.02383756115723709 -0.14680206545189795" fullinertia="3.8175502711743753e-05 5.213681500638133e-05 6.144166983884765e-05 1.0529523834473368e-06 -1.0447812321770183e-07 2.526993132742557e-06" />
+                                            </body>
+                                            <body name="bottomcase" pos="-0.000585210408 -0.00133203945 0.000205434569" quat="1 0 0 0">
+                                                <geom name="bottomcase_geom" type="mesh" mesh="bottomcase" pos="0 0 0" quat="1 0 0 0" />
+                                                <inertial mass="0.037954518983773604" pos="-0.004292933394007562 -0.024235907757725713 -0.2067983600853864" fullinertia="4.199249459715188e-05 4.306702486890026e-05 6.466677516818551e-05 -8.104362722676913e-08 1.6252656196290476e-07 1.3487763692881077e-06" />
+                                            </body>
+                                            <body name="servo_driver_pca9685" pos="0.00348628584 -0.000487254818 -0.125375566" quat="0.564787207 -0.434261015 0.517532124 0.473912737">
+                                                <geom name="servo_driver_pca9685_geom" type="mesh" mesh="servo_driver_pca9685" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.35 0.6 1" />
+                                                <inertial mass="0.029422298414433366" pos="0.028958967377674314 0.005173212450714225 0.0018510890772059714" fullinertia="1.8980116606076928e-06 7.792184669525717e-06 9.472642820755908e-06 7.578455036926715e-08 8.890992823114584e-09 3.643677099429318e-09" />
+                                            </body>
+                                            <body name="bus_servo_adapter" pos="-0.0199791816 -0.04494562 -0.139958814" quat="0.473912737 0.517532124 0.434261015 -0.564787207">
+                                                <geom name="bus_servo_adapter_geom" type="mesh" mesh="bus_servo_adapter" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.45 0.25 1" />
+                                                <inertial mass="0.03641439655795817" pos="0.019845369744282488 0.014852487744533134 0.0006377288052148251" fullinertia="4.611575002649344e-06 5.894262335705249e-06 9.737576814789517e-06 -4.844062074357955e-07 2.607728326328815e-07 2.9553783583733537e-07" />
+                                            </body>
 
                                             <!-- The six finger servos  -->
                                             <body name="finger_servo_a" pos="-1.6419447051174637e-05 -0.0011237598307833109 0.0001125561737196977" euler="0.0032159605642823386 0.0 1.787309509816767e-07">

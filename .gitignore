@@ -23,3 +23,4 @@ mano_data/
 *.pt
 *.ckpt
 main_motion/calib/data/Screenshot*
+new_out/
