@@ -819,7 +819,7 @@ class MjcArm:
 
     # rendering
     def make_renderer(self):
-        self.renderer = self.mj.Renderer(self.model)
+        self.renderer = self.mj.Renderer(self.model, height=1080, width=1920)
         return self.renderer
 
     def camera(self, distance=0.7, azimuth=70, elevation=-20, lookat=(0, 0, 0.5)):

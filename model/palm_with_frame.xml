@@ -11,7 +11,7 @@
          at adduction -0.864.
          + tendon coupling (equality constraints) for index and thumb
          16 Oct: new elbow base merged from the 16 Oct Fusion export
-         (elbowbase-1, elbow-base-2, elbow-base-3, elbow servo "fits") plus
+         (elbowbase-1, elbow-base-2, elbow-base-3, elbow STS3215 servo) plus
          the forearm case and electronics boards. Joints, actuators, sensors
          and the hand are unchanged; the elbow hinge in the new export has
          the same axis and pivot as before.
@@ -38,8 +38,6 @@
     </default>
 
     <asset>
-        <mesh name="base1" file="meshes/base1.stl" scale="0.001 0.001 0.001" />
-        <mesh name="elbow_case2-v1" file="meshes/elbow_case2-v1.stl" scale="0.001 0.001 0.001" />
         <mesh name="elbow_main1" file="meshes/elbow_main1.stl" scale="0.001 0.001 0.001" />
         <mesh name="elbow_main2" file="meshes/elbow_main2.stl" scale="0.001 0.001 0.001" />
         <mesh name="case_midarm2" file="meshes/case_midarm2.stl" scale="0.001 0.001 0.001" />
@@ -101,17 +99,31 @@
         <mesh name="elbowbase-1" file="meshes/elbowbase-1.stl" scale="0.001 0.001 0.001" />
         <mesh name="elbow-base-2" file="meshes/elbow-base-2.stl" scale="0.001 0.001 0.001" />
         <mesh name="elbow-base-3" file="meshes/elbow-base-3.stl" scale="0.001 0.001 0.001" />
-        <!-- Elbow STS3215 servo. "fits" is the top-level occurrence; its mass (0.347)
-             is the sum of its sub-parts, so its STL already contains the servo
-             body and both horn plates (fits_STS3215_03a-v1_* are not needed). -->
-        <mesh name="elbow_servo" file="meshes/fits.stl" scale="0.001 0.001 0.001" />
-        <!-- Forearm case and electronics. The two board meshes are the top-level
-             occurrences (masses = sum of their components), so the ~200 per-pin /
-             per-resistor PCB meshes in the export are left out. -->
+        <!-- Elbow STS3215 servo: body + both horn plates (the exporter writes no
+             STL for the parent occurrence "fits"). -->
+        <mesh name="fits_STS3215_03a-v1_main" file="meshes/fits_STS3215_03a-v1_main.stl" scale="0.001 0.001 0.001" />
+        <mesh name="fits_STS3215_03a-v1_ac1" file="meshes/fits_STS3215_03a-v1_ac1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="fits_STS3215_03a-v1_ac2" file="meshes/fits_STS3215_03a-v1_ac2.stl" scale="0.001 0.001 0.001" />
+        <!-- Forearm case and electronics. Boards are the PCB plus their visible
+             parts (chips, headers, connectors, standoffs); the ~180 pin / resistor /
+             silkscreen meshes in the export are left out. -->
         <mesh name="top_case" file="meshes/top_case.stl" scale="0.001 0.001 0.001" />
         <mesh name="bottomcase" file="meshes/bottomcase.stl" scale="0.001 0.001 0.001" />
-        <mesh name="servo_driver_pca9685" file="meshes/815-Servo-Driver-16-Channel.stl" scale="0.001 0.001 0.001" />
-        <mesh name="bus_servo_adapter" file="meshes/Waveshare_bus_serie_adapter.stl" scale="0.001 0.001 0.001" />
+        <mesh name="815-Servo-Driver-16-Channel_Board" file="meshes/815-Servo-Driver-16-Channel_Board.stl" scale="0.001 0.001 0.001" />
+        <mesh name="815-Servo-Driver-16-Channel_TSSOP28" file="meshes/815-Servo-Driver-16-Channel_TSSOP28.stl" scale="0.001 0.001 0.001" />
+        <mesh name="815-Servo-Driver-16-Channel_TO252" file="meshes/815-Servo-Driver-16-Channel_TO252.stl" scale="0.001 0.001 0.001" />
+        <mesh name="815-Servo-Driver-16-Channel_TERMBLOCK_1X2-3.5MM" file="meshes/815-Servo-Driver-16-Channel_TERMBLOCK_1X2-3.5MM.stl" scale="0.001 0.001 0.001" />
+        <mesh name="815-Servo-Driver-16-Channel_3X04" file="meshes/815-Servo-Driver-16-Channel_3X04.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_PCB" file="meshes/Waveshare_bus_serie_adapter_PCB.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_USB-C-16pins_shield" file="meshes/Waveshare_bus_serie_adapter_USB-C-16pins_shield.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_Barrel_jack_Face_body" file="meshes/Waveshare_bus_serie_adapter_Barrel_jack_Face_body.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_Barrel_jack_Back_body" file="meshes/Waveshare_bus_serie_adapter_Barrel_jack_Back_body.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_KF350_2p_Corps" file="meshes/Waveshare_bus_serie_adapter_KF350_2p_Corps.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_PinHeader_1x03_P254mm_Vertical" file="meshes/Waveshare_bus_serie_adapter_PinHeader_1x03_P254mm_Vertical.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_PinHeader_2x03_P254mm_Vertical" file="meshes/Waveshare_bus_serie_adapter_PinHeader_2x03_P254mm_Vertical.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_Spox_Molex_3pin_001_Spox-Molex-3pin-v1" file="meshes/Waveshare_bus_serie_adapter_Spox_Molex_3pin_001_Spox-Molex-3pin-v1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_Spox_Molex_3pin_002" file="meshes/Waveshare_bus_serie_adapter_Spox_Molex_3pin_002.stl" scale="0.001 0.001 0.001" />
+        <mesh name="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001" file="meshes/Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001.stl" scale="0.001 0.001 0.001" />
     </asset>
 
     <worldbody>
@@ -146,7 +158,8 @@
         <geom name="floor" pos="0 0 0" size="1 1 1" type="plane" rgba="1 0.83 0.61 0.5" contype="1" conaffinity="1" />
 
         <body name="base1" pos="0 0 0.43" euler="0 0 0">
-            <geom name="base1_geom" type="mesh" mesh="base1" pos="0 0 0" euler="0 0 0" />
+            <!-- 16 Oct: old base1 / elbow_case2 meshes removed - they occupy the same
+                 space as the new elbow base below. The bodies stay (elbow joint chain). -->
             <!-- 16 Oct: new elbow base. base1 has no joint, so these are static
                  and visual only (contacts off via the default). The export's
                  base frame is identical to this body's frame, so the parts sit
@@ -154,14 +167,15 @@
             <geom name="elbowbase-1_geom" type="mesh" mesh="elbowbase-1" pos="0 0 0" quat="1 0 0 0" />
             <geom name="elbow-base-3_geom" type="mesh" mesh="elbow-base-3" pos="0 0 0" quat="1 0 0 0" />
             <geom name="elbow-base-2_geom" type="mesh" mesh="elbow-base-2" pos="0 0 0" quat="1 0 0 0" />
-            <geom name="elbow_servo_geom" type="mesh" mesh="elbow_servo" pos="0.072567838 -0.0425 -0.4085" quat="0.707106781 -0.707106781 0 0" rgba="0.15 0.15 0.15 1" />
+            <geom name="fits_STS3215_03a-v1_main_geom" type="mesh" mesh="fits_STS3215_03a-v1_main" pos="0.072567838 -0.0425 -0.4085" quat="0.707106781 -0.707106781 0 0" rgba="0.15 0.15 0.15 1" />
+            <geom name="fits_STS3215_03a-v1_ac1_geom" type="mesh" mesh="fits_STS3215_03a-v1_ac1" pos="0.072567838 -0.0425 -0.4085" quat="0.707106781 -0.707106781 0 0" rgba="0.15 0.15 0.15 1" />
+            <geom name="fits_STS3215_03a-v1_ac2_geom" type="mesh" mesh="fits_STS3215_03a-v1_ac2" pos="0.072567838 -0.0425 -0.4085" quat="0.707106781 -0.707106781 0 0" rgba="0.15 0.15 0.15 1" />
             <!-- HARDWARE: printed shell 0.106 + 40T steel pulley 0.303 + 20T steel pulley
                  0.073 + HTD5M-9 belt 0.015 + STS3215 elbow servo 0.060 = 0.557 kg. -->
             <inertial mass="0.557" pos="0.03507294455526667 -0.0033303212525474858 -0.40908124270524016" fullinertia="5.60e-04 1.53e-03 1.22e-03 4.55e-05 4.54e-06 -7.62e-07" />
 
             <!-- Rigid 54: base1 <-> elbow_case2 -->
             <body name="elbow_case2-v1" pos="0 0 4.399708861372683" euler="0 0 0">
-                <geom name="elbow_case2-v1_geom" type="mesh" mesh="elbow_case2-v1" pos="0 0 0" euler="0 0 0" />
                 <!-- HARDWARE: printed 0.072 + STS3215 rotation servo 0.060 = 0.132 kg. -->
                 <inertial mass="0.132" pos="0.04384490458014511 -0.05333605265141133 -4.8088695397835695" fullinertia="9.30e-05 3.61e-04 2.92e-04 -5.67e-06 1.79e-06 -6.92e-08" />
 
@@ -269,11 +283,30 @@
                                                 <inertial mass="0.037954518983773604" pos="-0.004292933394007562 -0.024235907757725713 -0.2067983600853864" fullinertia="4.199249459715188e-05 4.306702486890026e-05 6.466677516818551e-05 -8.104362722676913e-08 1.6252656196290476e-07 1.3487763692881077e-06" />
                                             </body>
                                             <body name="servo_driver_pca9685" pos="0.00348628584 -0.000487254818 -0.125375566" quat="0.564787207 -0.434261015 0.517532124 0.473912737">
-                                                <geom name="servo_driver_pca9685_geom" type="mesh" mesh="servo_driver_pca9685" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.35 0.6 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_Board_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_Board" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.35 0.6 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_TSSOP28_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_TSSOP28" pos="0.02921 0.006477 0.00157" quat="0.707106781 0 0 -0.707106781" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_TO252_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_TO252" pos="0.018555 0.015178 0.00157" quat="0.707106781 0 0 -0.707106781" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_TERMBLOCK_1X2-3.5MM_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_TERMBLOCK_1X2-3.5MM" pos="0.02921 0.015113 0.00157" quat="0 0 0 -1" group="2" rgba="0.2 0.5 0.3 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_3X04_1_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_3X04" pos="0.02159 -0.00254 0.00157" quat="0 0 0 -1" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_3X04_2_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_3X04" pos="0.00889 -0.00254 0.00157" quat="0 0 0 -1" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_3X04_3_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_3X04" pos="0.04953 -0.00254 0.00157" quat="0 0 0 -1" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="815-Servo-Driver-16-Channel_3X04_4_geom" type="mesh" mesh="815-Servo-Driver-16-Channel_3X04" pos="0.03683 -0.00254 0.00157" quat="0 0 0 -1" group="2" rgba="0.1 0.1 0.1 1" />
                                                 <inertial mass="0.029422298414433366" pos="0.028958967377674314 0.005173212450714225 0.0018510890772059714" fullinertia="1.8980116606076928e-06 7.792184669525717e-06 9.472642820755908e-06 7.578455036926715e-08 8.890992823114584e-09 3.643677099429318e-09" />
                                             </body>
                                             <body name="bus_servo_adapter" pos="-0.0199791816 -0.04494562 -0.139958814" quat="0.473912737 0.517532124 0.434261015 -0.564787207">
-                                                <geom name="bus_servo_adapter_geom" type="mesh" mesh="bus_servo_adapter" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.45 0.25 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_PCB_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_PCB" pos="0 0 0" quat="1 0 0 0" group="2" rgba="0.1 0.45 0.25 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_USB-C-16pins_shield_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_USB-C-16pins_shield" pos="0.0322 0.0067 0" quat="1 0 0 0" group="2" rgba="0.75 0.75 0.78 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Barrel_jack_Face_body_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Barrel_jack_Face_body" pos="0.0098 0.0052 0.00555" quat="-0.5 -0.5 0.5 0.5" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Barrel_jack_Back_body_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Barrel_jack_Back_body" pos="0.0098 0.0052 0.00555" quat="-0.5 -0.5 0.5 0.5" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_KF350_2p_Corps_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_KF350_2p_Corps" pos="0.0176 0.0027 0" quat="1 0 0 0" group="2" rgba="0.2 0.5 0.3 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_PinHeader_1x03_P254mm_Vertical_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_PinHeader_1x03_P254mm_Vertical" pos="0.0357 0.0316 0" quat="-0.707106781 0 0 0.707106781" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_PinHeader_2x03_P254mm_Vertical_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_PinHeader_2x03_P254mm_Vertical" pos="0.0345 0.0211 0" quat="1 0 0 0" group="2" rgba="0.1 0.1 0.1 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Spox_Molex_3pin_001_Spox-Molex-3pin-v1_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Spox_Molex_3pin_001_Spox-Molex-3pin-v1" pos="0.01555 0.033 0.00201" quat="0 0 0 1" group="2" rgba="0.9 0.9 0.85 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Spox_Molex_3pin_002_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Spox_Molex_3pin_002" pos="0.02775 0.033 0.00201" quat="0 0 0 1" group="2" rgba="0.9 0.9 0.85 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001_1_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001" pos="0.0025 0.0025 -0.0016" quat="1 0 0 0" group="2" rgba="0.8 0.7 0.3 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001_2_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001" pos="0.0025 0.0305 -0.0016" quat="1 0 0 0" group="2" rgba="0.8 0.7 0.3 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001_3_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001" pos="0.0395 0.0025 -0.0016" quat="1 0 0 0" group="2" rgba="0.8 0.7 0.3 1" />
+                                                <geom name="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001_4_geom" type="mesh" mesh="Waveshare_bus_serie_adapter_Screws__hex_supports_Array_Corps001" pos="0.0395 0.0305 -0.0016" quat="1 0 0 0" group="2" rgba="0.8 0.7 0.3 1" />
                                                 <inertial mass="0.03641439655795817" pos="0.019845369744282488 0.014852487744533134 0.0006377288052148251" fullinertia="4.611575002649344e-06 5.894262335705249e-06 9.737576814789517e-06 -4.844062074357955e-07 2.607728326328815e-07 2.9553783583733537e-07" />
                                             </body>
 

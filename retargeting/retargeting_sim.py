@@ -71,17 +71,18 @@ def main():
     frames = []
     steps = 0
 
-    normal0, xv0, yv0 = palm_frame(joints[0][5], joints[0][17], joints[0][9], joints[0][0])
-    t = DepthScale.cam_tr(data["camera_translation"], data["focal_length"][0])
+    first = np.flatnonzero(~np.isnan(joints).any(axis=(1, 2)))[0]
+    normal0, xv0, yv0 = palm_frame(joints[first][5], joints[first][17], joints[first][9], joints[first][0])
+    t = DepthScale.cam_tr(data["camera_translation"], np.nanmedian(data["focal_length"]))
     mcp_cam = t + joints[:, 9]
     targets = DepthScale.smooth(DepthScale.ik_targets(mcp_cam))
-    print("fl:", data["focal_length"][:3])
+    print("fl:", np.nanmedian(data["focal_length"][:3]))
     print("raw:", data["camera_translation"][:3])
     print("corrected:", t[:3])
     d = np.linalg.norm(targets, axis=1)
     print("target distance mm:", np.nanmin(d), np.nanmax(d))
     print("first targets:", targets[:3])
-    normal, xv, yv = palm_frame(joints[0][5], joints[0][17], joints[0][9], joints[0][0])
+    normal, xv, yv = palm_frame(joints[first][5], joints[first][17], joints[first][9], joints[first][0])
     init_tilt = tilting(yv0, yv, normal0)
     init_roll = rolling(xv, normal0, normal)
 
