@@ -476,10 +476,14 @@
                                                                     <geom name="index_pad" type="capsule" mesh="finger_pad" pos="0 0 0"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
                                                                           solref="0.01 1" rgba="0.93 0.93 0.9 0" />
-                                                                    <!-- Conductive-thread sensor patch (gold square): placed where the caps meet in the pinch
+                                                                    <!-- Conductive-thread sensor patch (gold square). Until 21 Oct: placed where the caps meet in the pinch
                                                                          (pose set by hand in the viewer 8 Oct: index 0.431, thumb flex -0.05, adduction -0.0233).
                                                                          Box straddles the cap surface so contacts there count. -->
-                                                                    <site name="index_touch_site" type="box" pos="0.0425 0.0078 0.0707" zaxis="0.6796 -0.3927 -0.6196" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
+                                                                    <!-- 21 Oct: site moved onto the measured conductive pad. Pad start measured
+                                                                         across the silicone from the cap base edge, palmar midline (index 16 mm,
+                                                                         4 mm towards thumb; thumb 20 mm, 5 mm towards index). Site centred 3 mm past
+                                                                         the start so the 6 mm box begins at the pad edge; zaxis = cap surface normal. -->
+                                                                    <site name="index_touch_site" type="box" pos="0.0433 0.0056 0.0743" zaxis="0.6639 -0.6715 -0.3292" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: index fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.00022374756261357617" pos="0.031581250153481295 0.010651476627436785 0.07194223856503318" fullinertia="3.0123603941717283e-09 4.307530852387817e-09 2.4495403212269777e-09 -2.50132877986767e-10 -1.9127097604265335e-09 -1.4430492850129868e-10" />
@@ -529,10 +533,14 @@
                                                                     <geom name="thumb_pad" type="capsule" mesh="finger_pad" pos="0.01117 0.00991 -0.06252" quat="0.84408 -0.17353 -0.20530 -0.46398"
                                                                           contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
                                                                           solref="0.01 1" rgba="0.93 0.93 0.9 0" />
-                                                                    <!-- Conductive-thread sensor patch (gold square): placed where the caps meet in the pinch
+                                                                    <!-- Conductive-thread sensor patch (gold square). Until 21 Oct: placed where the caps meet in the pinch
                                                                          (pose set by hand in the viewer 8 Oct: index 0.431, thumb flex -0.05, adduction -0.0233).
                                                                          Box straddles the cap surface so contacts there count. -->
-                                                                    <site name="thumb_touch_site" type="box" pos="0.0256 0.0289 0.0291" zaxis="-0.0164 0.6175 0.7864" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
+                                                                    <!-- 21 Oct: site moved onto the measured conductive pad. Pad start measured
+                                                                         across the silicone from the cap base edge, palmar midline (index 16 mm,
+                                                                         4 mm towards thumb; thumb 20 mm, 5 mm towards index). Site centred 3 mm past
+                                                                         the start so the 6 mm box begins at the pad edge; zaxis = cap surface normal. -->
+                                                                    <site name="thumb_touch_site" type="box" pos="0.0315 0.0220 0.0244" zaxis="0.8693 -0.4514 0.2015" size="0.003 0.003 0.0015" rgba="0.85 0.7 0.2 1" />
                                                                     <!-- TUNE: thumb fingertip mass/length changes when
                                                                          you add the soft tip. -->
                                                                     <inertial mass="0.0003721523600156387" pos="0.02162607049174598 0.02784281296254021 0.010352768596363577" fullinertia="1.2865109962965175e-08 1.3725466630540284e-08 2.0819735411911066e-09 1.1929345267125193e-10 -2.5803675084034894e-09 1.083964558977824e-09" />
