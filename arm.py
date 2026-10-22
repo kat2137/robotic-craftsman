@@ -896,7 +896,7 @@ class DepthScale:
         ELBOW_REST - MuJoCo elbow angle (deg) with the forearm horizontal
     """
 
-    F_REAL_PX = 940.0                         # ≈ 22 mm on the 600D kit lens
+    F_REAL_PX = 881.0                         # ≈ 22 mm on the 600D kit lens
     UP_CAM = np.array([0.0, 0.0, -1.0])       # towards the camera = up from the table
     FWD_CAM = np.array([0.0, -1.0, 0.0])      # placeholder: forearm points up the image
     ELBOW_REST = 0.0
