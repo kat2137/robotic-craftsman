@@ -17,7 +17,7 @@ rolling = HandPose.rolling
 duration = 3
 framerate = 60
 ref_frames = []
-
+t1 = 0.002
 
 def cost(q: list, t1: float, t2: float):
     q = {"index mcp": q[0], "thumb mcp": q[1], "thumb add": q[2]}
@@ -27,6 +27,13 @@ def cost(q: list, t1: float, t2: float):
     t_tip = np.linalg.inv(mx["wrist tilt"]) @ mx['thumb tip']
     t_tip = t_tip[:3,3]
     return np.linalg.norm(i_tip-t1) + np.linalg.norm(t_tip-t2)
+
+def grip_detect(d:float, t1: float):
+    print(d)
+    if d < t1:
+        return True
+    else:
+        return False
 
 
 def main():
@@ -45,11 +52,12 @@ def main():
     joint_on = sim.vis_option(False)
     cam = sim.camera(0.7, 60, -20, [0, 0, 0.5])
     sim.reset()
-    mjdata.xfrc_applied[model.body("needle").id] = [0, 0, -0.0005 * 9.81, 0, 0, 0]
+    mjdata.xfrc_applied[model.body("needle").id] = [0, 0, 0.0005 * 9.81, 0, 0, 0]
     mjdata.joint("forearm_roll").qpos[0] = np.pi
+    sim.mj.mj_forward(model, mjdata)
     pad_i = mjdata.geom_xpos[model.geom("index_pad").id]
     pad_t = mjdata.geom_xpos[model.geom("thumb_pad").id]
-    centre = pad_i+pad_t/2
+    centre = (pad_i+pad_t)/2
 
     nb = model.body("needle").id
     ng = model.geom("needle_geom").id
@@ -69,6 +77,8 @@ def main():
     
     results = []
     frames = []
+    gripped = []
+    rows = []
     steps = 0
 
     first = np.flatnonzero(~np.isnan(joints).any(axis=(1, 2)))[0]
@@ -85,7 +95,7 @@ def main():
     normal, xv, yv = palm_frame(joints[first][5], joints[first][17], joints[first][9], joints[first][0])
     init_tilt = tilting(yv0, yv, normal0)
     init_roll = rolling(xv, normal0, normal)
-
+    
     for row in range(200):
 
         if np.isnan(joints[row]).any():
@@ -97,6 +107,12 @@ def main():
             if result is not None:
                 elbow_tilt = result[1]
             normal, xv, yv = palm_frame(joints[row][5], joints[row][17], joints[row][9], joints[row][0])
+
+            grip = grip_detect((np.linalg.norm(joints[row][8] - joints[row][4])), t1=t1)
+            if grip == True:
+                gripped.append(grip)
+                rows.append(row)
+                print(f'gripping',{row})
             print(elbow_tilt)
             R = np.array([-normal, yv, xv])
             tilt = tilting(yv0, yv, normal0)
@@ -121,6 +137,7 @@ def main():
             sim.set_ctrl("a_index_mcp", result.x[0])
             sim.set_ctrl("a_thumb_pip", result.x[1])
             sim.set_ctrl("a_thumb_mcp", result.x[2])
+
             sim.set_ctrl("a_wrist_tilt", np.radians(tilt + init_tilt))
             sim.set_ctrl("a_forearm_roll", np.radians(roll + init_roll))
             sim.set_ctrl("a_elbow_pitch", np.radians(elbow_tilt))
@@ -130,7 +147,9 @@ def main():
                 frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
     solved = np.array([r[1] for r in results])
-    np.savez(ROOT / "solved_angles_new2.npz", cost=costs, angles=solved)
+    grip = np.array([g for g in gripped])
+    rows = np.array([r for r in rows])
+    np.savez(ROOT / "solved_angles_new2.npz", cost=costs, angles=solved, grip=grip, rows=rows)
     np.savez(ROOT / "refs" / "clip02.npz", q_ref=np.array(ref_frames), fps=30)
     media.write_video(str(ROOT / "real_sim7.mp4"), frames, fps=30)
 
