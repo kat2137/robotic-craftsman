@@ -56,7 +56,6 @@ def wrist_grasp():
         exit()
         
 def main():
-    # the unused legacy board is still initialised, as before
     FingerBoard(calib, backend="legacy").connect()
     arm.connect()
     while True:

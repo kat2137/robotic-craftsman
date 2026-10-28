@@ -17,7 +17,7 @@ rolling = HandPose.rolling
 duration = 3
 framerate = 60
 ref_frames = []
-t1 = 0.002
+t1 = 0.012
 
 def cost(q: list, t1: float, t2: float):
     q = {"index mcp": q[0], "thumb mcp": q[1], "thumb add": q[2]}
@@ -34,6 +34,18 @@ def grip_detect(d:float, t1: float):
         return True
     else:
         return False
+
+def pad_gap(q, sim, g):
+    for j, val in zip(Q_JOINTS, q):
+        sim.set_leader(j, val, g)
+    sim.kinematics(g)
+    return np.linalg.norm(sim.site_pos("index_touch_site", g) - sim.site_pos("thumb_touch_site", g))
+
+MIN_GAP = 2.0   #needle diameter
+def grasp_cost(q, sim, g):
+    return (pad_gap(q, sim, g) * 1000 - MIN_GAP) ** 2
+
+
 
 
 def main():
@@ -73,7 +85,7 @@ def main():
     bounds = [sim.joint_range(j) for j in Q_JOINTS]
 
     angles = np.array([HandPose.apply_angles_arr(joints[i]) for i in range(len(joints))])
-
+    mid = np.radians(angles[:, 2])     # middle finger in radians
     
     results = []
     frames = []
@@ -96,7 +108,7 @@ def main():
     init_tilt = tilting(yv0, yv, normal0)
     init_roll = rolling(xv, normal0, normal)
     
-    for row in range(200):
+    for row in range(first, first + 10):   # 10 valid-start frames for testing:
 
         if np.isnan(joints[row]).any():
             continue
@@ -126,22 +138,34 @@ def main():
             # initial guess
             print(np.linalg.norm(target_i - BY_NAME["index mcp"]["offset"]))
             q = np.zeros(3)
+            g = sim.mj.MjData(model)
+            g.qpos[:] = mjdata.qpos
             # solver
             result = minimize(cost, q, args=(target_i, target_t), method='L-BFGS-B', bounds=bounds)
+            result2 = minimize(grasp_cost, [0.5, 0.0, -0.4], args=(sim, g), method='L-BFGS-B', bounds=bounds)
             results.append([result.fun, result.x])
             print(result.fun, result.x, result.success, result.message)
+            print(result2.fun, result2.x, result.success, result.message)
             print("target_i from knuckle:", target_i - BY_NAME["index mcp"]["offset"])
             print("target_t from knuckle:", target_t - BY_NAME["thumb mcp"]["offset"])
             steps +=1
 
-            sim.set_ctrl("a_index_mcp", result.x[0])
-            sim.set_ctrl("a_thumb_pip", result.x[1])
-            sim.set_ctrl("a_thumb_mcp", result.x[2])
-
+            if grip:
+                fingers = result2.x
+            else:
+                fingers = result.x
+            sim.set_ctrl("a_index_mcp", fingers[0])
+            sim.set_ctrl("a_thumb_pip", fingers[1])
+            sim.set_ctrl("a_thumb_mcp", fingers[2])
+            mid_q = mid[row] / (1 + 1.314 + 0.429)
+            sim.set_ctrl("a_mid_mcp", mid_q, clip=True)
+            sim.set_ctrl("a_mid_pip", 1.314 * mid_q, clip=True)
+            sim.set_ctrl("a_mid_mip", 0.429 * mid_q, clip=True)
             sim.set_ctrl("a_wrist_tilt", np.radians(tilt + init_tilt))
             sim.set_ctrl("a_forearm_roll", np.radians(roll + init_roll))
             sim.set_ctrl("a_elbow_pitch", np.radians(elbow_tilt))
-            ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), (result.x[0]), (result.x[1]), (result.x[2])])
+            ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), (result.x[0]), (result.x[1]), (result.x[2]), (mid_q)])
+            
             for _ in range(int((1/30) / model.opt.timestep)):
                 sim.step()
                 frames.append(sim.render(cam, joint_on))
@@ -150,8 +174,8 @@ def main():
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
     np.savez(ROOT / "solved_angles_new2.npz", cost=costs, angles=solved, grip=grip, rows=rows)
-    np.savez(ROOT / "refs" / "clip02.npz", q_ref=np.array(ref_frames), fps=30)
-    media.write_video(str(ROOT / "real_sim7.mp4"), frames, fps=30)
+    np.savez(ROOT / "refs" / "clip03.npz", q_ref=np.array(ref_frames), fps=30)
+    media.write_video(str(ROOT / "real_sim8.mp4"), frames, fps=30)
 
 
 if __name__ == "__main__":

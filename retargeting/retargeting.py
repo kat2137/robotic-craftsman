@@ -83,7 +83,7 @@ def main():
                 elbow_tilt = result[1]
             normal, xv, yv = palm_frame(joints[row][5], joints[row][17], joints[row][9], joints[row][0])
             print(elbow_tilt)
-            R = np.array([-normal, yv, xv])
+            R = np.array([normal, yv, xv])
             tilt = tilting(yv0, yv, normal0)
             roll = rolling(xv, normal0, normal)
             idx_t, th_t = joints[row][8] - joints[row][5], joints[row][4] - joints[row][1] #the real hand

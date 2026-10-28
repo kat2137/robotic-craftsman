@@ -1,4 +1,4 @@
-'''This code was copied from a Computer Vision Tutorial by Pysource on YouTube'''
+'''This code was copied and edited by me,from a Computer Vision Tutorial by Pysource on YouTube'''
 
 import cv2
 import numpy as np
