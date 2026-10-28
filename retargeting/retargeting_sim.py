@@ -108,7 +108,7 @@ def main():
     init_tilt = tilting(yv0, yv, normal0)
     init_roll = rolling(xv, normal0, normal)
     
-    for row in range(first, first + 10):   # 10 valid-start frames for testing:
+    for row in range(len(joints)):   
 
         if np.isnan(joints[row]).any():
             continue
