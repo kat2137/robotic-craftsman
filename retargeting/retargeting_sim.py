@@ -168,7 +168,7 @@ def main():
             
             for _ in range(int((1/30) / model.opt.timestep)):
                 sim.step()
-                frames.append(sim.render(cam, joint_on))
+            frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
     solved = np.array([r[1] for r in results])
     grip = np.array([g for g in gripped])
