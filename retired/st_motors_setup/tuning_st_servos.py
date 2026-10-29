@@ -1,8 +1,7 @@
 
 from arm import ST_PORT_LINUX, ST_BAUD, ST_SERVOS, STBus
 
-# elbow is not calibrated yet, so it is not offered here
-TUNABLE = ["wrist rotate", "wrist tilt"]
+TUNABLE = ["wrist rotate", "wrist tilt", 'elbow']
 
 
 def main():

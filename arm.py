@@ -42,7 +42,7 @@ GEAR_RATIO = {1:1.0, 2:1.0, 3:2.0}   # STS3215: 4096 counts per turn
 ST_SERVOS = {
     "wrist rotate": {"id": 1, "pos": 2059, "straight": 2048, "flexed": 4095, "min": 2000, "max": 4095},
     "wrist tilt":   {"id": 2, "pos": 2043, "straight": 2048, "flexed": 4095, "min": 2200, "max": 3000},
-    "elbow":        {"id": 3, "pos": 3052, "straight": 2048, "flexed": 4095, "min": None, "max": None},
+    "elbow":        {"id": 3, "pos": 3052, "straight": 2048, "flexed": 4095, "min": 2850, "max": 3700}
 }
 
 # --- PCA9685 finger servos ---------------------------------------------------

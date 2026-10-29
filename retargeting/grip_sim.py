@@ -5,6 +5,9 @@ from scipy.optimize import minimize
 from arm import ROOT, NPZ_PATH, Calibration, HandPose, MjcArm, DepthScale, ArmIK, STServo, FingerBoard
 from main_motion.f_kinematics import BY_NAME, fkine_all
 
+REAL_OPEN = [2200, 2200, 2200]
+REAL_PINCH = [1550, 2200, 1500]
+
 Q = ['a_index_mcp', 'a_thumb_pip', 'a_thumb_mcp']
 # leader joints optimised, in Q order
 Q_JOINTS = ['index_mcp_joint', 'thumb_pip_joint', 'thumb_mcp_joint']

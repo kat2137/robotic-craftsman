@@ -9,9 +9,10 @@ arm = RobotArm('linux').connect()
 
 ORDER = [5, 1, 0, 2]
 ST = [(0,3, -1), (1,1,1), (2,2,1)]
+OFFSET = {3: 0.0, 1: np.pi, 2: 0.0}
 RANGES = {5: (-0.05, 1.2), 1: (-0.05, 1.25), 0: (0.1, -1.27), 2: (0.0, 1.6)}   # ch limits in radians
 accel =  50  
-speed = 100
+speed = 600
 
 for row in q_ref:
     if np.isnan(row).any():
@@ -19,7 +20,12 @@ for row in q_ref:
     
     else:
         for i in ST:
-            counts = STServo.sim_to_real(i[1], row[i[0]], i[2])
+            if i[1] == 1:
+                angle = row[1] % (2 * np.pi) - np.pi      # roll, wrapped
+            else:
+                angle = row[i[0]]
+            counts = STServo.sim_to_real(i[1], angle, i[2])
+            print(i[1], counts)
             arm.st(i[1]).write(counts, speed, accel)
         for col, ch in zip(range(3, 7),ORDER):
             straight, flexed = RANGES[ch]
