@@ -72,11 +72,7 @@ EXTRA_FINGERS = {
 
 @dataclass
 class Calibration:
-    """finger_calib.json + ratios.json (w_spring) + scale_retarget.json in one place.
-
-    Joint limits in radians and the MJCF coupling ratios live in the MuJoCo model;
-    read them with MjcArm.joint_range() / MjcArm.couplings().
-    """
+    
     finger_calib: dict
     ratios: dict
     scales: dict
