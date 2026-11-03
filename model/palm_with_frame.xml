@@ -154,6 +154,7 @@
             <geom name="fr_inside_frame_geom" type="mesh" mesh="fr_inside_frame" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
             <geom name="fr_top_clipper_geom" type="mesh" mesh="fr_top_clipper" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
         </body>
+        <geom name="fabric" type="box" pos="-0.204 0 0.298" zaxis="-0.866 0 -0.5" size="0.12 0.085 0.0005" contype="0" conaffinity="0" rgba="0.9 0.88 0.8 0.6"/>
 
         <geom name="floor" pos="0 0 0" size="1 1 1" type="plane" rgba="1 0.83 0.61 0.5" contype="1" conaffinity="1" />
 

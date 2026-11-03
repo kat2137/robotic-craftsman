@@ -563,7 +563,6 @@ class HandPose:
 
     @staticmethod
     def palm_frame(mcp_i, mcp_p, mcp_m, w):
-        """(normal, x_axis, y_axis). x = y x normal, matched to the MuJoCo hand."""
         y_axis = np.array(HandPose.bone_vector(mcp_m, w))
         x_axis = np.array(HandPose.bone_vector(mcp_i, mcp_p))
         y_axis = y_axis / np.linalg.norm(y_axis)
@@ -642,7 +641,6 @@ class ReferenceHandFK:
         return self.find_parent(parent) + [link]
 
     def fkine(self, joint, angles: dict):
-        """Pose of one joint; angles maps every link name on the chain to an angle."""
         M = np.eye(4)
         for j in self.find_parent(joint):
             name = j["name"]
@@ -668,7 +666,6 @@ class ReferenceHandFK:
         return pose
 
     def expansion(self, q):
-        """Leader angles -> every joint, applying the coupling ratios."""
         Q = {}
         for link in self.links:
             if link["driver"] is None:
@@ -884,13 +881,7 @@ if __name__ == "__main__":
 # =============================================================================
 
 class DepthScale:
-    """Turns WiLoR output from the overhead tripod footage into arm motion.
-
-    Placeholders until the Thursday refilm:
-        F_REAL_PX  - real focal in px at 960 wide: lens_mm / 22.3 * 960 (600D, APS-C)
-        FWD_CAM    - image direction Hania's forearm points along the table
-        ELBOW_REST - MuJoCo elbow angle (deg) with the forearm horizontal
-    """
+    
 
     F_REAL_PX = 881.0                         # ≈ 22 mm on the 600D kit lens
     UP_CAM = np.array([0.0, 0.0, -1.0])       # towards the camera = up from the table

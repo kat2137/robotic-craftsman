@@ -18,6 +18,7 @@ rolling = HandPose.rolling
 duration = 3
 framerate = 60
 ref_frames = []
+grip_flags = []
 t1 = 0.012
 
 def cost(q: list, t1: float, t2: float):
@@ -141,9 +142,9 @@ def main(theta):
             normal, xv, yv = palm_frame(joints[row][5], joints[row][17], joints[row][9], joints[row][0])
 
             gripping = grip_detect(tip_d[row], gripping, t1, 1.5 * t1)
+            gripped.append(gripping)
+            rows.append(row)
             if gripping == True:
-                gripped.append(gripping)
-                rows.append(row)
                 print(f'gripping',{row})
             print(elbow_tilt)
             R = np.array([-normal, yv, xv])
@@ -194,7 +195,7 @@ def main(theta):
             sim.set_ctrl("a_forearm_roll", np.radians(roll + init_roll))
             sim.set_ctrl("a_elbow_pitch", np.radians(elbow_tilt))
             ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), (fingers[0]), (fingers[1]), (fingers[2]), (mid_q)])
-            
+            grip_flags.append(float(gripping))
             for _ in range(int((1/30) / model.opt.timestep)):
                 sim.step()
             frames.append(sim.render(cam, joint_on))
@@ -203,7 +204,7 @@ def main(theta):
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
     np.savez(ROOT / "solved_angles_new2.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
-    np.savez(ROOT / "refs" / "clip03.npz", q_ref=np.array(ref_frames), fps=30)
+    np.savez(ROOT / "refs" / "clip03.npz", q_ref=np.array(ref_frames), grip=np.array(grip), fps=30)
     media.write_video(str(ROOT / "real_sim8.mp4"), frames, fps=30)
 
 
