@@ -153,8 +153,12 @@
             <geom name="fr_outer_frame-1_geom" type="mesh" mesh="fr_outer_frame-1" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
             <geom name="fr_inside_frame_geom" type="mesh" mesh="fr_inside_frame" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
             <geom name="fr_top_clipper_geom" type="mesh" mesh="fr_top_clipper" pos="0 0 0" euler="0 0 0" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 1" />
+            <body name="fabric" pos="-0.0184 0.135 0.3004" zaxis="-0.866 0 -0.5">
+            <geom name="fabric_geom" type="box" size="0.090 0.125 0.0005" contype="0" conaffinity="0" rgba="0.9 0.88 0.8 0.6"/>
+            <site name="fabric_centre" size="0.002"/>
         </body>
-        <geom name="fabric" type="box" pos="-0.204 0 0.298" zaxis="-0.866 0 -0.5" size="0.12 0.085 0.0005" contype="0" conaffinity="0" rgba="0.9 0.88 0.8 0.6"/>
+        </body>
+        
 
         <geom name="floor" pos="0 0 0" size="1 1 1" type="plane" rgba="1 0.83 0.61 0.5" contype="1" conaffinity="1" />
 
@@ -430,6 +434,19 @@
                                                                 <body name="mid_tip" pos="-0.0005217307046265966 2.7229624762292878e-05 0.00018848966921075858" euler="0 0 0">
                                                                     <joint name="mid_mip_joint" type="hinge" axis="0.0399269226836975 0.9986328594451941 -0.033748849496326144" pos="0.025886376160294624 -0.022578957964246374 0.07083390647289452" range="-0.1 1.6" />
                                                                     <geom name="mid_tip_geom" type="mesh" mesh="mid_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <!-- 3 Nov: silicone cap on the middle finger, same finger_pad.stl as index/thumb.
+                                                                         The mesh is in the index_tip frame; moved by the index_tip -> mid_tip
+                                                                         mesh fit (translation only, 0.64 mm RMS; a rotation fit only added a
+                                                                         spurious 14 deg roll about the finger axis). mid_tip is ~1.7 mm longer
+                                                                         than index_tip: slide along the finger axis if the cap sits short. -->
+                                                                    <geom name="mid_pad_vis" type="mesh" mesh="finger_pad" pos="0.00051 -0.03378 0.00594"
+                                                                          contype="0" conaffinity="0" rgba="0.93 0.93 0.9 1" />
+                                                                    <geom name="mid_pad" type="capsule" mesh="finger_pad" pos="0.00051 -0.03378 0.00594"
+                                                                          contype="1" conaffinity="1" condim="4" friction="1.2 0.02 0.001"
+                                                                          solref="0.01 1" rgba="0.93 0.93 0.9 0" />
+                                                                    <!-- PLACEHOLDER (3 Nov): needle support point = index_touch_site moved by the
+                                                                         same offset. Re-measure where the needle actually rests on the middle cap. -->
+                                                                    <site name="mid_support_site" type="box" pos="0.04381 -0.02818 0.08024" zaxis="0.6639 -0.6715 -0.3292" size="0.003 0.003 0.0015" rgba="0.2 0.5 0.9 1" />
                                                                     <inertial mass="0.0002423237860749246" pos="0.031556971627425705 -0.02304046934559008 0.07729651107367415" fullinertia="3.718433516683201e-09 6.374071920929954e-09 3.639241239890688e-09 -6.56752845041331e-11 -2.9317343390183468e-09 -4.895491835961122e-11" />
                                                                 </body>
                                                             </body>
@@ -621,5 +638,7 @@
     <sensor>
         <touch name="index_touch" site="index_touch_site" />
         <touch name="thumb_touch" site="thumb_touch_site" />
+        <!-- 3 Nov: appended last so index/thumb sensordata indices are unchanged. -->
+        <touch name="mid_touch" site="mid_support_site" />
     </sensor>
 </mujoco>
