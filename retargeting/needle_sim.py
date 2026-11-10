@@ -13,7 +13,7 @@ Q_JOINTS = ['index_mcp_joint', 'thumb_pip_joint', 'thumb_mcp_joint']
 W = 30
 H = 0.001
 comp_value = 0.01
-PIERCE_TIMES = [(6, 8, 0.2), (15, 17, 0.6), (32, 33, 0.4), (38, 40, 0.5)] # marked times when needle is piercing the fabric
+PIERCE_TIMES = [(6, 8, 0.2), (15, 17, 0.6), (32, 33, 0.4), (38, 40, 0.5), (45, 47, 0.05), (53, 56, 0.3), (64, 66, 0.15), (80, 82, 0.1), (87, 89, 0.2), (98, 99, 0.2), (110, 112, 0.4), (119, 121, 0.15)] # marked times when needle is piercing the fabric
 pierce_period = []
 fps = 30
 framerate = 60
@@ -270,6 +270,8 @@ def main(theta):
     Fm = sim.data.geom_xmat[fid].reshape(3, 3)
     n = Fm[:, 2]
     p0 = sim.data.geom_xpos[fid]
+    prev_ret = np.zeros(2)
+    max_step = np.array([0.03, 0.05])
           
     for row in range(len(joints)):   
         
@@ -328,14 +330,19 @@ def main(theta):
             else:
                 fingers = result.x
             target_depth = pierce_target(row)
+            x_ret = np.array([np.radians(elbow_tilt), np.radians(tilt + init_tilt)])
+            cur_ret = np.zeros(2)
             if target_depth is not None and mjdata.eq_active[eq] == 1:
-                x_ret = [np.radians(elbow_tilt), np.radians(tilt + init_tilt)]
                 R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
                 tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
                 g.qpos[:] = mjdata.qpos
-                result3 = minimize(ntip_cost, x_ret, args = (x_ret, sim, g, tip_local, target_depth, n, Fm, p0), method='L-BFGS-B', bounds=arm_bounds)
-                elbow_cmd, tilt_cmd = result3.x
+                result3 = minimize(ntip_cost, x_ret + prev_ret, args = (x_ret, sim, g, tip_local, target_depth, n, Fm, p0), method='L-BFGS-B', bounds=arm_bounds)
+                cur_ret = result3.x - x_ret
                 print (result3.x, result3.fun)
+            push = np.clip(cur_ret - prev_ret, -max_step, max_step)
+            new_push = prev_ret + push
+            elbow_cmd, tilt_cmd = x_ret + new_push
+            prev_ret = new_push
             sim.set_ctrl("a_index_mcp", fingers[0])
             sim.set_ctrl("a_thumb_pip", fingers[1])
             sim.set_ctrl("a_thumb_mcp", fingers[2])
