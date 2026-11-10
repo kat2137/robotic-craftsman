@@ -66,7 +66,7 @@ def fabric_force_model (sim, state, prev_tip):
            if inside_frame and np.dot(tip - (p0 - h/2 * n), n) >= 0:
             state["contact"] = tip.copy()
            else:
-            return 0.0, n, tip
+            return 0.0, n, tip, 0.0
     
     L = np.dot(tip - state['contact'], n)
     dis = L - Y
@@ -92,4 +92,4 @@ def fabric_force_model (sim, state, prev_tip):
         cone_status = h
         fn, fr, fc, frc = friction_vals(0, 0, cone_status)
         P = P_base + frc
-    return P, n, tip
+    return P, n, tip, L

@@ -1,4 +1,4 @@
-# minimiser implemented using Aleksandar Haber PhD 'Solve OptimizationProblems in Python Using SciPy minimize()
+# minimiser implemented using Aleksandar Haber PhD 'Solve Optimization Problems in Python Using SciPy minimize()
 import mediapy as media
 import numpy as np
 from scipy.optimize import minimize
@@ -9,17 +9,30 @@ from retargeting.fabric_sim import fabric_force_model
 Q = ['a_index_mcp', 'a_thumb_pip', 'a_thumb_mcp']
 # leader joints optimised, in Q order
 Q_JOINTS = ['index_mcp_joint', 'thumb_pip_joint', 'thumb_mcp_joint']
+
 W = 30
+H = 0.001
+comp_value = 0.01
+PIERCE_TIMES = [(6, 8, 0.2), (15, 17, 0.6), (32, 33, 0.4), (38, 40, 0.5)] # marked times when needle is piercing the fabric
+pierce_period = []
+fps = 30
+framerate = 60
+duration = 3
+ref_frames = []
+t1 = 0.012
+
+for st, et, depth in PIERCE_TIMES:
+    frame_st, frame_end = round((st - 0) * fps), round((et - 0)* fps)
+    final = 0.001 + H + depth * 0.0738
+    pierce_period.append((frame_st, frame_end, final))
+
 
 palm_frame = HandPose.palm_frame
 cam_translation = DepthScale.cam_tr
 tilting = HandPose.tilting
 rolling = HandPose.rolling
 
-duration = 3
-framerate = 60
-ref_frames = []
-t1 = 0.012
+
 
 def cost(q: list, t1: float, t2: float):
     q = {"index mcp": q[0], "thumb mcp": q[1], "thumb add": q[2]}
@@ -28,9 +41,29 @@ def cost(q: list, t1: float, t2: float):
     i_tip = i_tip[:3,3]
     t_tip = np.linalg.inv(mx["wrist tilt"]) @ mx['thumb tip']
     t_tip = t_tip[:3,3]
-    return np.linalg.norm(i_tip-t1) + np.linalg.norm(t_tip-t2)
+    return np.linalg.norm(i_tip-t1) + np.linalg.norm(t_tip-t2)   
+    
+def ntip_distance(x: list, sim, g, depth_local: float, n: float):
+    for i, joint in zip(['elbow_pitch', 'wrist_tilt'], x):
+         sim.set_leader(i, joint, g)
+    sim.kinematics(g)
+    tid = sim.model.body("thumb_tip").id
+    t_tip = g.xpos[tid]
+    fid = sim.model.geom("fabric_geom").id
+    p0 = sim.data.geom_xpos[fid]
+    f_face = p0 - (H/2)*n
+    tip = t_tip + g.xmat[tid].reshape(3,3) @ depth_local
+    return np.dot(tip - f_face, n), tip
 
-def grip_detect(d, was_gripping, t_on, t_off):
+def ntip_cost(x: list, x_ret: list, sim, g, depth: float, target_depth:float, n: float, Fm, p0):
+    distance, tip = ntip_distance(x, sim, g, depth, n)
+    x_result = (x[0] - x_ret[0])**2 + (x[1] - x_ret[1])**2
+    a = np.dot(tip - p0, Fm[:, 0])
+    b = np.dot(tip - p0, Fm[:, 1])
+    outside = max(0, abs(a) - 0.090)**2 + max(0, abs(b) - 0.125)**2
+    return (distance - target_depth)**2 + x_result * comp_value + outside * 1000
+
+def grip_detect(d:float, was_gripping:bool , t_on:float , t_off:float):
     if was_gripping:
         return d < t_off      
     return d < t_on           
@@ -49,7 +82,7 @@ def get_theta(GRIP_Q, sim, g):
     s_d = g.site_xmat[sim.site_id("mid_support_site")].reshape(3,3)[:,2]
     return np.arccos(np.clip(-np.dot(i_d, t_d), -1, 1))
 
-def pad_gap(q, sim, g):
+def pad_gap(q:list, sim, g):
     for j, val in zip(Q_JOINTS, q):
         sim.set_leader(j, val, g)
     sim.kinematics(g)
@@ -149,6 +182,12 @@ def place_needle(sim):
     mjdata.qvel[model.jnt_dofadr[model.joint("needle_free").id]:][:6] = 0
     grip_needle(sim)
 
+def pierce_target(row: int):
+    for st, ed, depth in pierce_period:
+        if row >= st and row <= ed:
+            return (row - st) / (ed - st) * depth
+    return None
+
 
 def main(theta):
     data = np.load(NPZ_PATH)
@@ -186,6 +225,7 @@ def main(theta):
     bounds = [sim.joint_range(j) for j in Q_JOINTS]
     grip_bounds = list(bounds)
     grip_bounds[1] = (grip_bounds[1][0], 0.1)   
+    arm_bounds = [sim.joint_range('elbow_pitch'), sim.joint_range('wrist_tilt')]
 
     angles = np.array([HandPose.apply_angles_arr(joints[i]) for i in range(len(joints))])
     mid = np.radians(angles[:, 2])     # middle finger in radians
@@ -223,8 +263,14 @@ def main(theta):
 
     tip_d = np.linalg.norm(joints[:, 8] - joints[:, 4], axis=1)
     win = np.lib.stride_tricks.sliding_window_view(np.pad(tip_d, 2, mode='edge'), 5)
-    tip_d = np.nanmedian(win, axis=1)  
-          # 5-frame median, NaN-safe
+    tip_d = np.nanmedian(win, axis=1)  # 5-frame median, NaN-safe
+    eq = model.equality("needle_grip").id
+    tb = model.body("thumb_tip").id
+    fid = model.geom("fabric_geom").id
+    Fm = sim.data.geom_xmat[fid].reshape(3, 3)
+    n = Fm[:, 2]
+    p0 = sim.data.geom_xpos[fid]
+          
     for row in range(len(joints)):   
         
         if np.isnan(joints[row]).any():
@@ -275,11 +321,21 @@ def main(theta):
             print("target_i from knuckle:", target_i - BY_NAME["index mcp"]["offset"])
             print("target_t from knuckle:", target_t - BY_NAME["thumb mcp"]["offset"])
             steps +=1
+            elbow_cmd, tilt_cmd, roll_cmd = np.radians(elbow_tilt), np.radians(tilt + init_tilt), np.radians(roll + init_roll)
 
             if gripping:
-                fingers = result2.x
+                fingers = result2.x  
             else:
                 fingers = result.x
+            target_depth = pierce_target(row)
+            if target_depth is not None and mjdata.eq_active[eq] == 1:
+                x_ret = [np.radians(elbow_tilt), np.radians(tilt + init_tilt)]
+                R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
+                tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
+                g.qpos[:] = mjdata.qpos
+                result3 = minimize(ntip_cost, x_ret, args = (x_ret, sim, g, tip_local, target_depth, n, Fm, p0), method='L-BFGS-B', bounds=arm_bounds)
+                elbow_cmd, tilt_cmd = result3.x
+                print (result3.x, result3.fun)
             sim.set_ctrl("a_index_mcp", fingers[0])
             sim.set_ctrl("a_thumb_pip", fingers[1])
             sim.set_ctrl("a_thumb_mcp", fingers[2])
@@ -287,25 +343,25 @@ def main(theta):
             sim.set_ctrl("a_mid_mcp", mid_q, clip=True)
             sim.set_ctrl("a_mid_pip", 1.314 * mid_q, clip=True)
             sim.set_ctrl("a_mid_mip", 0.429 * mid_q, clip=True)
-            sim.set_ctrl("a_wrist_tilt", np.radians(tilt + init_tilt))
-            sim.set_ctrl("a_forearm_roll", np.radians(roll + init_roll))
-            sim.set_ctrl("a_elbow_pitch", np.radians(elbow_tilt))
-            ref_frames.append([np.radians(elbow_tilt), np.radians(init_roll+roll), np.radians(init_tilt+tilt), (fingers[0]), (fingers[1]), (fingers[2]), (mid_q)])
+            sim.set_ctrl("a_wrist_tilt", (tilt_cmd))
+            sim.set_ctrl("a_forearm_roll", (roll_cmd))
+            sim.set_ctrl("a_elbow_pitch", (elbow_cmd))
+            ref_frames.append([elbow_cmd, roll_cmd, tilt_cmd, (fingers[0]), (fingers[1]), (fingers[2]), (mid_q)])
             print(f'Tip_d:{tip_d[row]}')
             # once per frame: grip onset -> wait for the pinch to close; grip end -> let go
             if gripping and not prev_grip:
                 pending = True
             if not gripping:
                 pending = False
-                release_needle(sim)
+                #release_needle(sim)
             prev_grip = gripping
             nb = model.body("needle").id
             for _ in range(int((1/30) / model.opt.timestep)):
-                P, n, tip = fabric_force_model(sim, state, prev_tip)
+                P, n, tip, L = fabric_force_model(sim, state, prev_tip)
                 force = -P * n
                 print(f'P:{P}, n: {n}, tip:{tip}, N/m:{force}, state:{state["contact"]}')
                 mjdata.qfrc_applied[:] = 0
-                sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, nb, mjdata.qfrc_applied)
+                sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, tb, mjdata.qfrc_applied)
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
                 if pending:
@@ -322,9 +378,9 @@ def main(theta):
     solved = np.array([r[1] for r in results])
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
-    np.savez(ROOT / "solved_angles_new3.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
-    np.savez(ROOT / "refs" / "clip04.npz", q_ref=np.array(ref_frames), fps=30)
-    media.write_video(str(ROOT / "needle_test1.mp4"), frames, fps=30)
+    np.savez(ROOT / "solved_angles_frame1.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
+    np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), fps=30)
+    media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
 
 
 if __name__ == "__main__":
