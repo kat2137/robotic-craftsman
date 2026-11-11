@@ -229,6 +229,8 @@ def main(theta):
 
     angles = np.array([HandPose.apply_angles_arr(joints[i]) for i in range(len(joints))])
     mid = np.radians(angles[:, 2])     # middle finger in radians
+    ring = np.radians(angles[:, 3])
+    small = np.radians(angles[:, 4])
     
     results = []
     frames = []
@@ -293,15 +295,17 @@ def main(theta):
             print(elbow_tilt)
             R = np.array([-normal, yv, xv])
             tilt = tilting(yv0, yv, normal0)
-            roll = rolling(xv, normal0, normal)
+            if abs(tilt) < 75 or prev_roll is None:        
+                roll = rolling(xv, normal0, normal)
+            else:
+                roll = prev_roll                           
             if prev_tilt is None:
                 prev_tilt, prev_roll = tilt, roll
-
-            delta_tilt = (tilt - prev_tilt + 180) % 360 - 180  #ema for wrist tilt
-            delta_roll = (roll - prev_roll + 180) % 360 - 180 #ema for wrist roll
+            delta_tilt = (tilt - prev_tilt + 180) % 360 - 180
+            delta_roll = (roll - prev_roll + 180) % 360 - 180
             tilt = prev_tilt + a * delta_tilt
             roll = prev_roll + a * delta_roll
-
+            roll = init_roll + (roll - init_roll + 180) % 360 - 180   # keep within ±180° of the start
             prev_tilt, prev_roll = tilt, roll
             idx_t, th_t = joints[row][8] - joints[row][5], joints[row][4] - joints[row][1] #the real hand
             idx_t, th_t = R @ idx_t, R @ th_t
@@ -350,10 +354,18 @@ def main(theta):
             sim.set_ctrl("a_mid_mcp", mid_q, clip=True)
             sim.set_ctrl("a_mid_pip", 1.314 * mid_q, clip=True)
             sim.set_ctrl("a_mid_mip", 0.429 * mid_q, clip=True)
+            ring_q = ring[row] / (1 + 1.314 + 0.429)
+            sim.set_ctrl("a_ring_mcp", ring_q, clip=True)
+            sim.set_ctrl("a_ring_pip", 1.314 * ring_q, clip=True)
+            sim.set_ctrl("a_ring_mip", 0.429 * ring_q, clip=True)
+            small_q = small[row] / (1 + 1.314 + 0.429)
+            sim.set_ctrl("a_small_mcp", small_q, clip=True)
+            sim.set_ctrl("a_small_pip", 1.314 * small_q, clip=True)
+            sim.set_ctrl("a_small_mip", 0.429 * small_q, clip=True)
             sim.set_ctrl("a_wrist_tilt", (tilt_cmd))
             sim.set_ctrl("a_forearm_roll", (roll_cmd))
             sim.set_ctrl("a_elbow_pitch", (elbow_cmd))
-            ref_frames.append([elbow_cmd, roll_cmd, tilt_cmd, (fingers[0]), (fingers[1]), (fingers[2]), (mid_q)])
+            ref_frames.append([elbow_cmd, roll_cmd, tilt_cmd, (fingers[0]), (fingers[1]), (fingers[2]), (mid_q), (ring_q), (small_q)])
             print(f'Tip_d:{tip_d[row]}')
             # once per frame: grip onset -> wait for the pinch to close; grip end -> let go
             if gripping and not prev_grip:

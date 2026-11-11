@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--rescale_factor', type=float, default=2.0, help='Factor for padding the bbox')
     parser.add_argument('--file_type', nargs='+', default=['*.jpg', '*.png', '*.jpeg'], help='List of file extensions to consider')
     parser.add_argument('--fast',   dest='fast', action='store_true', default=False, help='Use FP16 and layer dropping to accelerate inference')
+    parser.add_argument('--start', type=int, default=0)
     args = parser.parse_args()
 
     # model load - start of wilor copy
@@ -58,7 +59,8 @@ def main():
 
     print(f"Found {total} frames")
     # start of inference
-    for frame_idx in range(total):
+    cap.set(cv2.CAP_PROP_POS_FRAMES, args.start)
+    for frame_idx in range(args.start, total):
         ret, img_cv2 = cap.read()
         if not ret:
             print(f"  Error: Could not read frame {frame_idx}")
@@ -85,7 +87,7 @@ def main():
         
         frame_name = f"frame{frame_idx:06d}"
         frame_path = os.path.join(args.out_folder, f"{frame_name}_new.png")
-        cv2.imwrite(frame_path, img_cv2)
+        #cv2.imwrite(frame_path, img_cv2)
         boxes = np.stack(bboxes)
         right = np.stack(is_right)
         

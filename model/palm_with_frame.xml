@@ -156,6 +156,13 @@
             <body name="fabric" pos="-0.0184 0.135 0.3004" zaxis="-0.866 0 -0.5">
             <geom name="fabric_geom" type="box" size="0.090 0.125 0.0005" contype="0" conaffinity="0" rgba="0.9 0.88 0.8 0.6"/>
             <site name="fabric_centre" size="0.002"/>
+            <!-- 11 Nov: frame bars as boxes for finger bracing. Mesh collisions use the
+                 convex hull, so the frame meshes would act as a solid slab over the opening.
+                 PLACEHOLDER sizes/positions: match the real inside frame. Contacts only via <contact> pairs. -->
+            <geom name="frame_bar_top"    type="box" pos="0  0.135 0" size="0.100 0.010 0.005" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 0.4"/>
+            <geom name="frame_bar_bottom" type="box" pos="0 -0.135 0" size="0.100 0.010 0.005" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 0.4"/>
+            <geom name="frame_bar_left"   type="box" pos="-0.100 0 0" size="0.010 0.145 0.005" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 0.4"/>
+            <geom name="frame_bar_right"  type="box" pos=" 0.100 0 0" size="0.010 0.145 0.005" contype="0" conaffinity="0" rgba="0.55 0.42 0.30 0.4"/>
         </body>
         </body>
         
@@ -248,7 +255,7 @@
 
                                     <!-- Revolute 5: forearm rotation.-->
                                     <body name="top_rotation-wheel" pos="0 0 0.0020000000000005257" euler ="0 0 0">
-                                        <joint name="forearm_roll" type="hinge" axis="0.0 4.0939474033052545e-15 1.0" pos="-0.004240473500689968 -0.02300890514721359 -0.2393000149569177" range="-3.14 3.14" />
+                                        <joint name="forearm_roll" type="hinge" axis="0.0 4.0939474033052545e-15 1.0" pos="-0.004240473500689968 -0.02300890514721359 -0.2393000149569177" range="0 6.28" />
                                         <geom name="top_rotation-wheel_geom" type="mesh" mesh="top_rotation-wheel" pos="0 0 0" euler="0 0 0" />
                                         <inertial mass="0.022411307932975036" pos="-0.00424071790696933 -0.023008905494745716 -0.23417960972865293" fullinertia="2.3268450014598185e-05 2.376079359130991e-05 4.679615087053676e-05 -7.00500059027569e-16 1.2562717962530823e-12 -6.697658920529204e-17" />
 
@@ -392,6 +399,7 @@
                                                                 <body name="small_tip" pos="-0.0005459779151107314 -4.279200114645221e-05 9.246457085431814e-05" euler="0 0 0">
                                                                     <joint name="small_mip_joint" type="hinge" axis="-0.03811 0.9734980000000002 0.22549700000000017" pos="0.015502002869293837 -0.07435828707079838 0.04059355314547497" range="-0.1 1.6" />
                                                                     <geom name="small_tip_geom" type="mesh" mesh="small_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <geom name="small_col" type="capsule" mesh="small_tip" contype="0" conaffinity="0" rgba="0 0 0 0" />
                                                                     <inertial mass="0.0001971292481623935" pos="0.019359258548178188 -0.0761176765351247 0.04678146889886098" fullinertia="3.574667336993926e-09 4.541729028158009e-09 2.0497991113783282e-09 4.220942074545941e-10 -1.9645037647037292e-09 5.310086627171715e-10" />
                                                                 </body>
                                                             </body>
@@ -413,6 +421,7 @@
                                                                 <body name="ring_tip" pos="-0.0005397145964585442 -2.3735131764460043e-05 0.00012890901405169673" euler="0 0 0">
                                                                     <joint name="ring_mip_joint" type="hinge" axis="-0.033757504640993356 0.9985253576684019 0.04251819847551381" pos="0.02148489311312602 -0.04529576364098356 0.05618883051772424" range="-0.1 1.6" />
                                                                     <geom name="ring_tip_geom" type="mesh" mesh="ring_tip" pos="0 0 0" euler="0 0 0" />
+                                                                    <geom name="ring_col" type="capsule" mesh="ring_tip" contype="0" conaffinity="0" rgba="0 0 0 0" />
                                                                     <inertial mass="0.00029331964192942075" pos="0.02664638597974688 -0.04574669714236132 0.06467250834431607" fullinertia="6.8515003597532604e-09 9.28553495075995e-09 3.583018125102493e-09 -3.144408630894058e-11 -3.88215674221878e-09 -1.1588475326477215e-10" />
                                                                 </body>
                                                             </body>
@@ -597,6 +606,26 @@
         </body>
     </worldbody>
 
+    <!-- 11 Nov: explicit contact pairs. Only these collide; the needle is in none,
+         so it still passes through the fabric (puncture force model handles it).
+         Fabric: soft (deformable); frame bars: rigid (default). solref/solimp are
+         starting values - tune against measured fabric. -->
+    <contact>
+        <pair geom1="index_pad" geom2="fabric_geom" solref="0.05 1" solimp="0.5 0.9 0.005"/>
+        <pair geom1="thumb_pad" geom2="fabric_geom" solref="0.05 1" solimp="0.5 0.9 0.005"/>
+        <pair geom1="mid_pad"   geom2="fabric_geom" solref="0.05 1" solimp="0.5 0.9 0.005"/>
+        <pair geom1="ring_col"  geom2="fabric_geom" solref="0.05 1" solimp="0.5 0.9 0.005"/>
+        <pair geom1="small_col" geom2="fabric_geom" solref="0.05 1" solimp="0.5 0.9 0.005"/>
+        <pair geom1="ring_col"  geom2="frame_bar_top"/>
+        <pair geom1="ring_col"  geom2="frame_bar_bottom"/>
+        <pair geom1="ring_col"  geom2="frame_bar_left"/>
+        <pair geom1="ring_col"  geom2="frame_bar_right"/>
+        <pair geom1="small_col" geom2="frame_bar_top"/>
+        <pair geom1="small_col" geom2="frame_bar_bottom"/>
+        <pair geom1="small_col" geom2="frame_bar_left"/>
+        <pair geom1="small_col" geom2="frame_bar_right"/>
+    </contact>
+
     <equality>
         <!--weld name="needle_grip" body1="thumb_tip" body2="needle"
               relpose="0 0 0 1 0 0 0" solref="0.005 1" /-->
@@ -615,7 +644,7 @@
          Swap to <motor> if you want torque control instead. -->
     <actuator>
         <position name="a_elbow_pitch"     joint="elbow_pitch"       ctrlrange="-1.57 1.57" />
-        <position name="a_forearm_roll"    joint="forearm_roll"      kp="600"   ctrlrange="-3.14 3.14" />
+        <position name="a_forearm_roll"    joint="forearm_roll"      kp="600"   ctrlrange="0 6.28" />
         <position name="a_wrist_tilt"      joint="wrist_tilt"        kp="600"   ctrlrange="-1.4 1.4" />
 
         <position name="a_index_mcp"       joint="index_mcp_joint"   ctrlrange="-0.05 1.2" />
