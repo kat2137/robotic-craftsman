@@ -166,6 +166,7 @@ def place_needle(sim):
     sim.mj.mj_forward(model, mjdata)
     dist = mid_clearance(sim, ng, mg)
     k = 0
+
     while dist < -0.0002 and k * a < 0.5:
         k += 1
         x_new = np.cos(k * a) * x + np.sin(k * a)* np.cross(u, x)
@@ -187,6 +188,7 @@ def pierce_target(row: int):
         if row >= st and row <= ed:
             return (row - st) / (ed - st) * depth
     return None
+
 
 
 def main(theta):
@@ -236,6 +238,8 @@ def main(theta):
     frames = []
     gripped = []
     rows = []
+    pierce_frames = []
+    grip_frames = []
     steps = 0
 
     first = np.flatnonzero(~np.isnan(joints).any(axis=(1, 2)))[0]
@@ -331,12 +335,14 @@ def main(theta):
 
             if gripping:
                 fingers = result2.x  
+                grip_frames.append(row)
             else:
                 fingers = result.x
             target_depth = pierce_target(row)
             x_ret = np.array([np.radians(elbow_tilt), np.radians(tilt + init_tilt)])
             cur_ret = np.zeros(2)
             if target_depth is not None and mjdata.eq_active[eq] == 1:
+                pierce_frames.append(target_depth)
                 R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
                 tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
                 g.qpos[:] = mjdata.qpos
@@ -398,7 +404,7 @@ def main(theta):
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
     np.savez(ROOT / "solved_angles_frame1.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
-    np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), fps=30)
+    np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), pierce_depth=np.array(pierce_frames), pinch_frames = np.array(grip_frames), fps=30)
     media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
 
 
