@@ -335,14 +335,12 @@ def main(theta):
 
             if gripping:
                 fingers = result2.x  
-                grip_frames.append(row)
             else:
                 fingers = result.x
             target_depth = pierce_target(row)
             x_ret = np.array([np.radians(elbow_tilt), np.radians(tilt + init_tilt)])
             cur_ret = np.zeros(2)
             if target_depth is not None and mjdata.eq_active[eq] == 1:
-                pierce_frames.append(target_depth)
                 R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
                 tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
                 g.qpos[:] = mjdata.qpos
@@ -372,6 +370,8 @@ def main(theta):
             sim.set_ctrl("a_forearm_roll", (roll_cmd))
             sim.set_ctrl("a_elbow_pitch", (elbow_cmd))
             ref_frames.append([elbow_cmd, roll_cmd, tilt_cmd, (fingers[0]), (fingers[1]), (fingers[2]), (mid_q), (ring_q), (small_q)])
+            grip_frames.append(float(gripping))
+            pierce_frames.append(target_depth if target_depth is not None else -1.0)
             print(f'Tip_d:{tip_d[row]}')
             # once per frame: grip onset -> wait for the pinch to close; grip end -> let go
             if gripping and not prev_grip:
