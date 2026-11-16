@@ -133,6 +133,7 @@ def grip_needle(sim):
     model.eq_data[eq][3:6] = Rt.T @ (point - mjdata.xpos[tb])       
     model.eq_data[eq][6:10] = rel_q
     mjdata.eq_active[eq] = 1
+    sim.weld_rel = model.eq_data[eq][:10].copy()
 
 
 def release_needle(sim):
@@ -241,6 +242,7 @@ def main(theta):
     pierce_frames = []
     grip_frames = []
     steps = 0
+    
 
     first = np.flatnonzero(~np.isnan(joints).any(axis=(1, 2)))[0]
     normal0, xv0, yv0 = palm_frame(joints[first][5], joints[first][17], joints[first][9], joints[first][0])
@@ -266,6 +268,7 @@ def main(theta):
     pending = False
     state = {'contact': None, "pierced": False}
     prev_tip = sim.site_pos("needle_tip")
+    prev_elbow = 0.0
 
     tip_d = np.linalg.norm(joints[:, 8] - joints[:, 4], axis=1)
     win = np.lib.stride_tricks.sliding_window_view(np.pad(tip_d, 2, mode='edge'), 5)
@@ -276,19 +279,37 @@ def main(theta):
     Fm = sim.data.geom_xmat[fid].reshape(3, 3)
     n = Fm[:, 2]
     p0 = sim.data.geom_xpos[fid]
+    f_face = p0 - (H/2) * n
     prev_ret = np.zeros(2)
     max_step = np.array([0.03, 0.05])
           
     for row in range(len(joints)):   
         
         if np.isnan(joints[row]).any():
+            if not ref_frames:
+                continue                          # no pose yet at the very start
+            ref_frames.append(ref_frames[-1])     # hold last pose
+            grip_frames.append(grip_frames[-1])
+            td = pierce_target(row)
+            pierce_frames.append(td if td is not None else -1.0)
+            for _ in range(int((1/30) / model.opt.timestep)):
+                P, n, tip, L = fabric_force_model(sim, state, prev_tip)
+                if state["contact"] is not None and np.dot(tip - f_face, n) < 0:
+                    state["contact"] = None
+                    state["pierced"] = False
+                mjdata.qfrc_applied[:] = 0
+                sim.mj.mj_applyFT(model, mjdata, -P * n, np.zeros(3), tip, tb, mjdata.qfrc_applied)
+                sim.step()
+                prev_tip = sim.site_pos("needle_tip").copy()
+            frames.append(sim.render(cam, joint_on))
             continue
         else:
             print("target:", targets[row])
             result = ik.solve(targets[row])   
-            elbow_tilt = 0.0       # ← here
+            elbow_tilt = prev_elbow    # ← here
             if result is not None:
                 elbow_tilt = result[1]
+            prev_elbow = elbow_tilt
             normal, xv, yv = palm_frame(joints[row][5], joints[row][17], joints[row][9], joints[row][0])
 
             gripping = grip_detect(tip_d[row], gripping, t1, 1.5 * t1)
@@ -383,6 +404,9 @@ def main(theta):
             nb = model.body("needle").id
             for _ in range(int((1/30) / model.opt.timestep)):
                 P, n, tip, L = fabric_force_model(sim, state, prev_tip)
+                if state["contact"] is not None and np.dot(tip - f_face, n) < 0:
+                    state["contact"] = None
+                    state["pierced"] = False
                 force = -P * n
                 print(f'P:{P}, n: {n}, tip:{tip}, N/m:{force}, state:{state["contact"]}')
                 mjdata.qfrc_applied[:] = 0
@@ -404,7 +428,7 @@ def main(theta):
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
     np.savez(ROOT / "solved_angles_frame1.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
-    np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), pierce_depth=np.array(pierce_frames), pinch_frames = np.array(grip_frames), fps=30)
+    np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), pierce_depth=np.array(pierce_frames), pinch_frames = np.array(grip_frames), needle_weld=sim.weld_rel, fps=30)
     media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
 
 
