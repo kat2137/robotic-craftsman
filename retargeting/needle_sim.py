@@ -20,6 +20,7 @@ framerate = 60
 duration = 3
 ref_frames = []
 t1 = 0.012
+RENDER = False
 
 for st, et, depth in PIERCE_TIMES:
     frame_st, frame_end = round((st - 0) * fps), round((et - 0)* fps)
@@ -301,8 +302,9 @@ def main(theta):
                 sim.mj.mj_applyFT(model, mjdata, -P * n, np.zeros(3), tip, tb, mjdata.qfrc_applied)
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
-            frames.append(sim.render(cam, joint_on))
-            continue
+            if RENDER:
+                frames.append(sim.render(cam, joint_on))
+                continue
         else:
             print("target:", targets[row])
             result = ik.solve(targets[row])   
@@ -408,7 +410,6 @@ def main(theta):
                     state["contact"] = None
                     state["pierced"] = False
                 force = -P * n
-                print(f'P:{P}, n: {n}, tip:{tip}, N/m:{force}, state:{state["contact"]}')
                 mjdata.qfrc_applied[:] = 0
                 sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, tb, mjdata.qfrc_applied)
                 sim.step()
@@ -421,15 +422,18 @@ def main(theta):
                         state["contact"] = None
                         state["pierced"] = False
                         prev_tip = sim.site_pos("needle_tip").copy()
-                        frames.append(sim.render(cam, joint_on))   # spawn frame
-            frames.append(sim.render(cam, joint_on))
+                        if RENDER:
+                            frames.append(sim.render(cam, joint_on))   # spawn frame
+            if RENDER:
+                frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
     solved = np.array([r[1] for r in results])
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
     np.savez(ROOT / "solved_angles_frame1.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
     np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), pierce_depth=np.array(pierce_frames), pinch_frames = np.array(grip_frames), needle_weld=sim.weld_rel, fps=30)
-    media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
+    if RENDER:
+        media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
 
 
 if __name__ == "__main__":
