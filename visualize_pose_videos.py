@@ -87,7 +87,7 @@ def main():
         
         frame_name = f"frame{frame_idx:06d}"
         frame_path = os.path.join(args.out_folder, f"{frame_name}_new.png")
-        #cv2.imwrite(frame_path, img_cv2)
+        cv2.imwrite(frame_path, img_cv2)
         boxes = np.stack(bboxes)
         right = np.stack(is_right)
         

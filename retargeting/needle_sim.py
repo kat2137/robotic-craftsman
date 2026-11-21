@@ -20,7 +20,7 @@ framerate = 60
 duration = 3
 ref_frames = []
 t1 = 0.012
-RENDER = False
+RENDER = True
 
 for st, et, depth in PIERCE_TIMES:
     frame_st, frame_end = round((st - 0) * fps), round((et - 0)* fps)
@@ -102,7 +102,8 @@ def needle_model(sim):
     spec.geom("floor").conaffinity = 3
     eq = spec.add_equality()
     eq.name = "needle_grip"
-    tip = spec.body("needle").add_site(name="needle_tip", pos=[0.1769, 0.0990, 0.0010])
+    spec.body("needle").add_site(name="needle_tip", pos=[0.1769, 0.0990, 0.0010])
+    spec.body("needle").add_site(name="needle_eye", pos=[0.1105, 0.0990, 0.0010])
     eq.type = sim.mj.mjtEq.mjEQ_WELD
     eq.objtype = sim.mj.mjtObj.mjOBJ_BODY
     eq.name1 = "thumb_tip"
@@ -136,6 +137,12 @@ def grip_needle(sim):
     mjdata.eq_active[eq] = 1
     sim.weld_rel = model.eq_data[eq][:10].copy()
 
+def push_cost(q, sim, g, eye, prev):
+    for name, val in zip(Q_JOINTS[1:], q):
+        sim.set_leader(name, val, g)
+    sim.kinematics(g)
+    pad = g.site_xpos[sim.site_id("thumb_touch_site")]
+    return np.sum((pad - eye) ** 2) * 1e6 + 1e-3 * np.sum((q - prev) ** 2)
 
 def release_needle(sim):
     sim.data.eq_active[sim.model.equality("needle_grip").id] = 0
@@ -267,7 +274,7 @@ def main(theta):
     gripping = False
     prev_grip = False
     pending = False
-    state = {'contact': None, "pierced": False}
+    state = {'contact': None, "pierced": False, 'release': False, 'retraction': False}
     prev_tip = sim.site_pos("needle_tip")
     prev_elbow = 0.0
 
@@ -276,6 +283,7 @@ def main(theta):
     tip_d = np.nanmedian(win, axis=1)  # 5-frame median, NaN-safe
     eq = model.equality("needle_grip").id
     tb = model.body("thumb_tip").id
+    nb = model.body("needle").id
     fid = model.geom("fabric_geom").id
     Fm = sim.data.geom_xmat[fid].reshape(3, 3)
     n = Fm[:, 2]
@@ -360,6 +368,17 @@ def main(theta):
                 fingers = result2.x  
             else:
                 fingers = result.x
+                if state["pierced"] and not gripping and not state["release"] and not state["retraction"]:
+                    release_needle(sim)
+                    entry = state["contact"].copy()
+                    prev_thumb = np.array(fingers[1:])
+                    state["release"] = True
+                if state["release"]:
+                    eye = sim.site_pos("needle_eye").copy()
+                    g.qpos[:] = mjdata.qpos
+                    r4 = minimize(push_cost, prev_thumb, args=(sim, g, eye, prev_thumb), method="L-BFGS-B", bounds=[bounds[1], bounds[2]])
+                    fingers = np.array([fingers[0], *r4.x])
+                    prev_thumb = r4.x
             target_depth = pierce_target(row)
             x_ret = np.array([np.radians(elbow_tilt), np.radians(tilt + init_tilt)])
             cur_ret = np.zeros(2)
@@ -399,11 +418,11 @@ def main(theta):
             # once per frame: grip onset -> wait for the pinch to close; grip end -> let go
             if gripping and not prev_grip:
                 pending = True
+                state["release"], state["retraction"] = False, False
             if not gripping:
                 pending = False
-                #release_needle(sim)
             prev_grip = gripping
-            nb = model.body("needle").id
+            body = nb if (state["release"] or state["retraction"]) else tb
             for _ in range(int((1/30) / model.opt.timestep)):
                 P, n, tip, L = fabric_force_model(sim, state, prev_tip)
                 if state["contact"] is not None and np.dot(tip - f_face, n) < 0:
@@ -411,9 +430,10 @@ def main(theta):
                     state["pierced"] = False
                 force = -P * n
                 mjdata.qfrc_applied[:] = 0
-                sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, tb, mjdata.qfrc_applied)
+                sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, body, mjdata.qfrc_applied)
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
+                prev = g.site_xpos[sim.site_id("thumb_touch_site")]
                 if pending:
                     gap = np.linalg.norm(sim.site_pos("index_touch_site") - sim.site_pos("thumb_touch_site"))
                     if gap < 0.008:
@@ -422,8 +442,13 @@ def main(theta):
                         state["contact"] = None
                         state["pierced"] = False
                         prev_tip = sim.site_pos("needle_tip").copy()
+                        if state["release"]:
+                            tip_p, eye_p = sim.site_pos("needle_tip"), sim.site_pos("needle_eye")
+                            axis = (tip_p - eye_p) / np.linalg.norm(tip_p - eye_p)
+                            if np.dot(entry - eye_p, axis) / 0.0664 >= 0.8:
+                                state["release"], state["retraction"] = False, True
                         if RENDER:
-                            frames.append(sim.render(cam, joint_on))   # spawn frame
+                            frames.append(sim.render(cam, joint_on))  
             if RENDER:
                 frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
