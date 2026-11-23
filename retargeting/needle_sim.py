@@ -20,7 +20,7 @@ framerate = 60
 duration = 3
 ref_frames = []
 t1 = 0.012
-RENDER = True
+RENDER = False
 
 for st, et, depth in PIERCE_TIMES:
     frame_st, frame_end = round((st - 0) * fps), round((et - 0)* fps)
@@ -103,7 +103,7 @@ def needle_model(sim):
     eq = spec.add_equality()
     eq.name = "needle_grip"
     spec.body("needle").add_site(name="needle_tip", pos=[0.1769, 0.0990, 0.0010])
-    spec.body("needle").add_site(name="needle_eye", pos=[0.1105, 0.0990, 0.0010])
+    spec.body("needle").add_site(name="needle_eye", pos=[0.1031, 0.0990, 0.0010])
     eq.type = sim.mj.mjtEq.mjEQ_WELD
     eq.objtype = sim.mj.mjtObj.mjOBJ_BODY
     eq.name1 = "thumb_tip"
@@ -168,10 +168,8 @@ def place_needle(sim):
     quat = np.zeros(4)
     sim.mj.mju_mat2Quat(quat, R.flatten())
     mjdata.qpos[adr + 3:adr + 7] = quat
-    S_on = P - np.dot(P - pad_s, x) * x
-    eye = S_on - 0.008 * x
-    mid = eye + 0.0369 * x
-    mjdata.qpos[adr:adr+3]= mid - R @ model.geom_pos[nc]
+    g_local = np.array([0.1031 + 0.2 * 0.0738, 0.0990, 0.0010])
+    mjdata.qpos[adr:adr+3] = P - R @ g_local
     sim.mj.mj_forward(model, mjdata)
     dist = mid_clearance(sim, ng, mg)
     k = 0
@@ -185,7 +183,7 @@ def place_needle(sim):
         mid = eye + 0.0369 * x_new
         sim.mj.mju_mat2Quat(quat, R.flatten())
         mjdata.qpos[adr + 3:adr + 7] = quat
-        mjdata.qpos[adr:adr+3]= mid - R @ model.geom_pos[nc]
+        mjdata.qpos[adr:adr+3] = P - R @ g_local
         sim.mj.mj_forward(model, mjdata)
         dist = mid_clearance(sim, ng, mg)
     print(f"needle placed: rotation steps {k}, middle cap clearance {dist * 1000:.2f} mm")
@@ -307,7 +305,12 @@ def main(theta):
                     state["contact"] = None
                     state["pierced"] = False
                 mjdata.qfrc_applied[:] = 0
-                sim.mj.mj_applyFT(model, mjdata, -P * n, np.zeros(3), tip, tb, mjdata.qfrc_applied)
+                if state["release"] or state["retraction"]:
+                    mjdata.qpos[n_adr:n_adr + 3] = x0 + s_push * axis
+                    mjdata.qpos[n_adr + 3:n_adr + 7] = q0
+                    mjdata.qvel[n_dof:n_dof + 6] = 0
+                else:
+                    sim.mj.mj_applyFT(model, mjdata, -P * n, np.zeros(3), tip, tb, mjdata.qfrc_applied)
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
             if RENDER:
@@ -373,8 +376,14 @@ def main(theta):
                     entry = state["contact"].copy()
                     prev_thumb = np.array(fingers[1:])
                     state["release"] = True
+                    x0 = mjdata.xpos[nb].copy(); q0 = mjdata.xquat[nb].copy()
+                    eye0 = sim.site_pos("needle_eye").copy()
+                    axis = sim.site_pos("needle_tip") - eye0; axis /= np.linalg.norm(axis)
+                    s_push, touched = 0.0, False
                 if state["release"]:
                     eye = sim.site_pos("needle_eye").copy()
+                    if touched:
+                        eye = eye + 0.004 * axis
                     g.qpos[:] = mjdata.qpos
                     r4 = minimize(push_cost, prev_thumb, args=(sim, g, eye, prev_thumb), method="L-BFGS-B", bounds=[bounds[1], bounds[2]])
                     fingers = np.array([fingers[0], *r4.x])
@@ -422,7 +431,6 @@ def main(theta):
             if not gripping:
                 pending = False
             prev_grip = gripping
-            body = nb if (state["release"] or state["retraction"]) else tb
             for _ in range(int((1/30) / model.opt.timestep)):
                 P, n, tip, L = fabric_force_model(sim, state, prev_tip)
                 if state["contact"] is not None and np.dot(tip - f_face, n) < 0:
@@ -430,10 +438,21 @@ def main(theta):
                     state["pierced"] = False
                 force = -P * n
                 mjdata.qfrc_applied[:] = 0
-                sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, body, mjdata.qfrc_applied)
+                if state["release"] or state["retraction"]:
+                    if state["release"]:
+                        pad = sim.site_pos("thumb_touch_site")
+                        eye_now = x0 + s_push * axis + (eye0 - x0)
+                        if np.linalg.norm(pad - eye_now) < 0.004:
+                            touched = True
+                        if touched:
+                            s_push = max(s_push, s_push + np.dot(pad - eye_now, axis))
+                    mjdata.qpos[n_adr:n_adr + 3] = x0 + s_push * axis
+                    mjdata.qpos[n_adr + 3:n_adr + 7] = q0
+                    mjdata.qvel[n_dof:n_dof + 6] = 0
+                else:
+                    sim.mj.mj_applyFT(model, mjdata, force, np.zeros(3), tip, tb, mjdata.qfrc_applied)
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
-                prev = g.site_xpos[sim.site_id("thumb_touch_site")]
                 if pending:
                     gap = np.linalg.norm(sim.site_pos("index_touch_site") - sim.site_pos("thumb_touch_site"))
                     if gap < 0.008:
@@ -448,7 +467,12 @@ def main(theta):
                             if np.dot(entry - eye_p, axis) / 0.0664 >= 0.8:
                                 state["release"], state["retraction"] = False, True
                         if RENDER:
-                            frames.append(sim.render(cam, joint_on))  
+                            frames.append(sim.render(cam, joint_on))
+                        if state["release"]:
+                            eye_p = sim.site_pos("needle_eye")
+                            frac = 1 - np.dot(entry - eye_p, axis) / 0.0738
+                            if frac >= 0.8:
+                                state["release"], state["retraction"] = False, True  
             if RENDER:
                 frames.append(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
