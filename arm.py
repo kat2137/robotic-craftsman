@@ -303,7 +303,7 @@ class STServo:
 
             if moving == 0:
                 break
-        return
+        return self.packetHandler.getTxRxResult(scs_comm_result)
 
     def wait_until_stopped(self, timeout: float = 6.0, poll: float = 0.02, settle: float = 0.15):
         """Quiet version of wait() with a deadline. Returns the last position read, or None."""
