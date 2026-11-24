@@ -1,12 +1,9 @@
 """Core classes for the robotic craftsman arm.
-
 Every other module imports its hardware, calibration, kinematics, simulation and
 camera helpers from here.
-
 Nothing in this file touches hardware at import time. scservo_sdk, the PCA9685
 libraries, board/busio, mujoco and cv2 are imported inside the methods that need
 them, so `import arm` works on a Mac with nothing plugged in.
-
 Channel naming (confirmed on video 10 Sept):
     ch0 = thumb adduction ("thumb_add")
     ch1 = thumb flexion   ("thumb")
@@ -18,7 +15,6 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, Optional
-
 import numpy as np
 
 # --- paths -------------------------------------------------------------------
@@ -40,9 +36,9 @@ GEAR_RATIO = {1:1.0, 2:1.0, 3:2.0}   # STS3215: 4096 counts per turn
 
 
 ST_SERVOS = {
-    "wrist rotate": {"id": 1, "pos": 2059, "straight": 2048, "flexed": 4095, "min": 2000, "max": 4095},
+    "wrist rotate": {"id": 1, "pos": 1104, "straight": 2048, "flexed": 4095, "min": 400, "max": 2330},
     "wrist tilt":   {"id": 2, "pos": 2043, "straight": 2048, "flexed": 4095, "min": 2200, "max": 3000},
-    "elbow":        {"id": 3, "pos": 3052, "straight": 2048, "flexed": 4095, "min": 2850, "max": 3700}
+    "elbow":        {"id": 3, "pos": 3052, "straight": 2048, "flexed": 4095, "min": 2550, "max": 3300}
 }
 
 # --- PCA9685 finger servos ---------------------------------------------------
@@ -64,7 +60,6 @@ EXTRA_FINGERS = {
     4: {"name": "pinkie", "straight": 1700, "flexed": 1000},
     5: {"name": "index",  "straight":  2200, "flexed": 1300 }
 }
-
 
 # =============================================================================
 # Calibration
@@ -250,7 +245,7 @@ class STServo:
     min: Optional[int] = None
     max: Optional[int] = None
     ZERO_COUNTS = {
-        1: 2000,
+        1: 1104,
         2: 3000,
         3: 3052
         }
@@ -375,7 +370,31 @@ class FingerServo:
     def frac_to_us(self, frac: float) -> float:
         """0.0 = straight .. 1.0 = flexed."""
         return self.straight + frac * (self.flexed - self.straight)
+        
+class PinchSensor:
+    """Conductive-thread fingertip pads: the needle bridging the pads pulls the pin LOW."""
+    BLINKA_NAMES = {7: "D4", 29: "D5", 31: "D6"}          # physical pin -> Adafruit board name
 
+    def __init__(self, pin=7, stable_reads=3):
+        import board, digitalio
+        self.io = digitalio.DigitalInOut(getattr(board, self.BLINKA_NAMES[pin]))
+        self.io.direction = digitalio.Direction.INPUT
+        self.stable_reads = stable_reads
+        self._last, self._count, self.state = None, 0, False
+
+    def raw(self):
+        return not self.io.value          # True = pads bridged (pin pulled LOW)
+
+    def read(self):
+        val = self.raw()
+        self._count = self._count + 1 if val == self._last else 1
+        self._last = val
+        if self._count >= self.stable_reads:
+            self.state = val
+        return self.state
+
+    def close(self):
+        self.io.deinit()
 
 class FingerBoard:
     """PCA9685 board driving the finger servos.
@@ -404,7 +423,7 @@ class FingerBoard:
             self.pca.frequency = self.freq
         else:
             from Adafruit_PCA9685 import PCA9685
-            self.pwm = PCA9685(busnum=1)
+            self.pwm = PCA9685(busnum=7)
             self.pwm.set_pwm_freq(self.freq)
         return self
 

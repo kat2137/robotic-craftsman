@@ -12,7 +12,7 @@ def main():
     try:
         while True:
             val = GPIO.input(SENSOR)
-            print(val, "BLOCKED" if val == GPIO.HIGH else "clear")
+            print(val, "NEEDLE" if val == GPIO.LOW else "open")
             time.sleep(0.15)
     except KeyboardInterrupt:
         GPIO.cleanup()
