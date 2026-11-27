@@ -20,7 +20,9 @@ framerate = 60
 duration = 3
 ref_frames = []
 t1 = 0.012
-RENDER = False
+RENDER = True
+PUSH_LINKS = ['thumb_pip_joint', 'thumb_mcp_joint', 'wrist_tilt', 'forearm_roll']
+BASE = np.array([-0.249, 0])
 
 for st, et, depth in PIERCE_TIMES:
     frame_st, frame_end = round((st - 0) * fps), round((et - 0)* fps)
@@ -32,7 +34,6 @@ palm_frame = HandPose.palm_frame
 cam_translation = DepthScale.cam_tr
 tilting = HandPose.tilting
 rolling = HandPose.rolling
-
 
 
 def cost(q: list, t1: float, t2: float):
@@ -137,12 +138,12 @@ def grip_needle(sim):
     mjdata.eq_active[eq] = 1
     sim.weld_rel = model.eq_data[eq][:10].copy()
 
-def push_cost(q, sim, g, eye, prev):
-    for name, val in zip(Q_JOINTS[1:], q):
+def push_cost(q, sim, g, eye, prev, n, f_face, Fm, p0):
+    for name, val in zip(PUSH_LINKS, q):
         sim.set_leader(name, val, g)
     sim.kinematics(g)
     pad = g.site_xpos[sim.site_id("thumb_touch_site")]
-    return np.sum((pad - eye) ** 2) * 1e6 + 1e-3 * np.sum((q - prev) ** 2)
+    return np.sum((pad - eye) ** 2) * 1e6 + 1e-3 * np.sum((q - prev) ** 2) + 1e8 * fabric_distance(sim, g, n, f_face, Fm, p0)
 
 def release_needle(sim):
     sim.data.eq_active[sim.model.equality("needle_grip").id] = 0
@@ -196,6 +197,25 @@ def pierce_target(row: int):
             return (row - st) / (ed - st) * depth
     return None
 
+FINGER_JOINTS = ["index_mcp_joint", "index_pip_joint", "index_mip_joint",
+                 "mid_mcp_joint", "middle_pip_joint", "mid_mip_joint",
+                 "ring_mcp_joint", "ring_pip_joint", "ring_mip_joint",
+                 "small_mcp_joint", "small_pip_joint", "small_mip_joint",
+                 "thumb_mcp_joint", "thumb_pip_joint", "thumb_tip_joint"]
+TIP_JOINTS = {"index_mip_joint", "mid_mip_joint", "ring_mip_joint", "small_mip_joint", "thumb_tip_joint"}
+                                    
+        
+def fabric_distance(sim, g, n, f_face, Fm, p0):
+    penalty = 0.0
+    for j in FINGER_JOINTS:                                   
+        p = g.xanchor[sim.model.joint(j).id]                  
+        wd, ht = np.dot(p - p0, Fm[:, 0]), np.dot(p - p0, Fm[:, 1])
+        d = np.dot(p - f_face, n)
+        limit = 0.004 if (abs(wd) < 0.090 and abs(ht) < 0.125) else -0.019
+        if j in TIP_JOINTS:
+            limit -= 0.025  
+        penalty += max(0.0, d - limit) ** 2
+    return penalty
 
 
 def main(theta):
@@ -242,12 +262,13 @@ def main(theta):
     small = np.radians(angles[:, 4])
     
     results = []
-    frames = []
     gripped = []
     rows = []
     pierce_frames = []
     grip_frames = []
     steps = 0
+    writer = media.VideoWriter(str(ROOT / "needle_test2.mp4"), shape=(1080, 1920), fps=30)
+    writer.__enter__()
     
 
     first = np.flatnonzero(~np.isnan(joints).any(axis=(1, 2)))[0]
@@ -287,8 +308,10 @@ def main(theta):
     n = Fm[:, 2]
     p0 = sim.data.geom_xpos[fid]
     f_face = p0 - (H/2) * n
-    prev_ret = np.zeros(2)
+    prev_ret = BASE.copy()
     max_step = np.array([0.03, 0.05])
+    hold = None
+    ret_log = []
           
     for row in range(len(joints)):   
         
@@ -314,7 +337,7 @@ def main(theta):
                 sim.step()
                 prev_tip = sim.site_pos("needle_tip").copy()
             if RENDER:
-                frames.append(sim.render(cam, joint_on))
+                writer.add_image(sim.render(cam, joint_on))
                 continue
         else:
             print("target:", targets[row])
@@ -385,35 +408,62 @@ def main(theta):
                     if touched:
                         eye = eye + 0.004 * axis
                     g.qpos[:] = mjdata.qpos
-                    r4 = minimize(push_cost, prev_thumb, args=(sim, g, eye, prev_thumb), method="L-BFGS-B", bounds=[bounds[1], bounds[2]])
-                    fingers = np.array([fingers[0], *r4.x])
-                    prev_thumb = r4.x
+                    start = np.array([*prev_thumb, mjdata.joint('wrist_tilt').qpos[0], mjdata.joint('forearm_roll').qpos[0]])
+                    r4 = minimize(push_cost, start, args=(sim, g, eye, start, n, f_face, Fm, p0), method="L-BFGS-B", bounds=[bounds[1], bounds[2], arm_bounds[1], sim.joint_range('forearm_roll')])
+                    fingers = np.array([fingers[0], r4.x[0], r4.x[1]])
+                    prev_thumb = r4.x[:2]
+                    roll_cmd = r4.x[3]
+                    elbow_now = hold[0] if hold is not None else mjdata.joint('elbow_pitch').qpos[0]
+                    hold = np.array([elbow_now, r4.x[2]])
             target_depth = pierce_target(row)
             x_ret = np.array([np.radians(elbow_tilt), np.radians(tilt + init_tilt)])
-            cur_ret = np.zeros(2)
-            if target_depth is not None and mjdata.eq_active[eq] == 1:
-                R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
-                tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
-                g.qpos[:] = mjdata.qpos
-                result3 = minimize(ntip_cost, x_ret + prev_ret, args = (x_ret, sim, g, tip_local, target_depth, n, Fm, p0), method='L-BFGS-B', bounds=arm_bounds)
-                cur_ret = result3.x - x_ret
-                print (result3.x, result3.fun)
-            push = np.clip(cur_ret - prev_ret, -max_step, max_step)
-            new_push = prev_ret + push
-            elbow_cmd, tilt_cmd = x_ret + new_push
-            prev_ret = new_push
+            if state["release"] or state["retraction"]:
+                if hold is None:
+                    hold = x_ret + prev_ret          # arm pose at the moment of release
+                elbow_cmd, tilt_cmd = hold
+                prev_ret = hold - x_ret
+            else:
+                hold = None
+                cur_ret = BASE.copy()
+                if target_depth is not None and mjdata.eq_active[eq] == 1:
+                    R_t = mjdata.xmat[tb].reshape(3, 3) # rotation matrix for the thumb
+                    tip_local = R_t.T @ (sim.site_pos("needle_tip") - mjdata.xpos[tb])
+                    g.qpos[:] = mjdata.qpos
+                    result3 = minimize(ntip_cost, x_ret + prev_ret, args = (x_ret, sim, g, tip_local, target_depth, n, Fm, p0), method='L-BFGS-B', bounds=arm_bounds)
+                    cur_ret = result3.x - x_ret
+                    ret_log.append(cur_ret)
+                    print (result3.x, result3.fun, cur_ret)
+                push = np.clip(cur_ret - prev_ret, -max_step, max_step)
+                new_push = prev_ret + push
+                elbow_cmd, tilt_cmd = x_ret + new_push
+                prev_ret = new_push
+            
+            mid_q = mid[row] / (1 + 1.314 + 0.429)
+            ring_q = ring[row] / (1 + 1.314 + 0.429)
+            small_q = small[row] / (1 + 1.314 + 0.429)
+            g.qpos[:] = mjdata.qpos
+            for i in range(40):
+                sim.set_leader("elbow_pitch", elbow_cmd, g)
+                sim.set_leader("wrist_tilt", tilt_cmd, g)
+                sim.set_leader("forearm_roll", roll_cmd, g)
+                for j, val in [("index_mcp_joint", fingers[0]), ("thumb_pip_joint", fingers[1]), ("thumb_mcp_joint", fingers[2]), ("mid_mcp_joint", mid_q), ("middle_pip_joint", 1.314 * mid_q), ("mid_mip_joint", 0.429 * mid_q),("ring_mcp_joint", ring_q), ("ring_pip_joint", 1.314 * ring_q), ("ring_mip_joint", 0.429 * ring_q), ("small_mcp_joint", small_q), ("small_pip_joint", 1.314 * small_q), ("small_mip_joint", 0.429 * small_q)]:
+                    sim.set_leader(j, val, g)
+                sim.kinematics(g)
+                if fabric_distance(sim, g, n, f_face, Fm, p0) == 0:
+                    break
+                elbow_cmd += 0.01
             sim.set_ctrl("a_index_mcp", fingers[0])
             sim.set_ctrl("a_thumb_pip", fingers[1])
             sim.set_ctrl("a_thumb_mcp", fingers[2])
-            mid_q = mid[row] / (1 + 1.314 + 0.429)
+
             sim.set_ctrl("a_mid_mcp", mid_q, clip=True)
             sim.set_ctrl("a_mid_pip", 1.314 * mid_q, clip=True)
             sim.set_ctrl("a_mid_mip", 0.429 * mid_q, clip=True)
-            ring_q = ring[row] / (1 + 1.314 + 0.429)
+            
             sim.set_ctrl("a_ring_mcp", ring_q, clip=True)
             sim.set_ctrl("a_ring_pip", 1.314 * ring_q, clip=True)
             sim.set_ctrl("a_ring_mip", 0.429 * ring_q, clip=True)
-            small_q = small[row] / (1 + 1.314 + 0.429)
+            
             sim.set_ctrl("a_small_mcp", small_q, clip=True)
             sim.set_ctrl("a_small_pip", 1.314 * small_q, clip=True)
             sim.set_ctrl("a_small_mip", 0.429 * small_q, clip=True)
@@ -427,7 +477,6 @@ def main(theta):
             # once per frame: grip onset -> wait for the pinch to close; grip end -> let go
             if gripping and not prev_grip:
                 pending = True
-                state["release"], state["retraction"] = False, False
             if not gripping:
                 pending = False
             prev_grip = gripping
@@ -446,6 +495,9 @@ def main(theta):
                             touched = True
                         if touched:
                             s_push = max(s_push, s_push + np.dot(pad - eye_now, axis))
+                        eye_now = eye0 + s_push * axis
+                        if 1 - np.dot(entry - eye_now, axis) / 0.0738 >= 0.8:
+                            state["release"], state["retraction"] = False, True
                     mjdata.qpos[n_adr:n_adr + 3] = x0 + s_push * axis
                     mjdata.qpos[n_adr + 3:n_adr + 7] = q0
                     mjdata.qvel[n_dof:n_dof + 6] = 0
@@ -460,29 +512,21 @@ def main(theta):
                         pending = False
                         state["contact"] = None
                         state["pierced"] = False
+                        state["release"], state["retraction"] = False, False
                         prev_tip = sim.site_pos("needle_tip").copy()
-                        if state["release"]:
-                            tip_p, eye_p = sim.site_pos("needle_tip"), sim.site_pos("needle_eye")
-                            axis = (tip_p - eye_p) / np.linalg.norm(tip_p - eye_p)
-                            if np.dot(entry - eye_p, axis) / 0.0664 >= 0.8:
-                                state["release"], state["retraction"] = False, True
                         if RENDER:
-                            frames.append(sim.render(cam, joint_on))
-                        if state["release"]:
-                            eye_p = sim.site_pos("needle_eye")
-                            frac = 1 - np.dot(entry - eye_p, axis) / 0.0738
-                            if frac >= 0.8:
-                                state["release"], state["retraction"] = False, True  
+                            writer.add_image(sim.render(cam, joint_on)) 
             if RENDER:
-                frames.append(sim.render(cam, joint_on))
+                writer.add_image(sim.render(cam, joint_on))
     costs  = np.array([r[0] for r in results])
     solved = np.array([r[1] for r in results])
     grip = np.array([g for g in gripped])
     rows = np.array([r for r in rows])
+    ret_log = np.array(ret_log)
     np.savez(ROOT / "solved_angles_frame1.npz", cost=costs, angles=solved, grip=grip, rows=rows, theta=theta)
     np.savez(ROOT / "refs" / "clip05.npz", q_ref=np.array(ref_frames), pierce_depth=np.array(pierce_frames), pinch_frames = np.array(grip_frames), needle_weld=sim.weld_rel, fps=30)
-    if RENDER:
-        media.write_video(str(ROOT / "needle_test2.mp4"), frames, fps=30)
+    
+    writer.__exit__(None, None, None)
 
 
 if __name__ == "__main__":
